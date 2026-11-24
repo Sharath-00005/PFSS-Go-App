@@ -1,0 +1,3389 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <title>Public Force Security Services — GeoAttend</title>
+
+  <!-- PWA & Mobile Home Screen Meta Tags + Company Crest Icons -->
+  <meta name="theme-color" content="#141518" />
+  <meta name="mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+  <meta name="apple-mobile-web-app-title" content="PFSS GeoAttend" />
+  <link rel="icon" type="image/png" sizes="192x192" href="icon-192.png" />
+  <link rel="apple-touch-icon" href="icon-192.png" />
+  <link rel="manifest" id="pwaManifestLink" href="" />
+
+  <!-- Tailwind CSS & Lucide Icons -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://unpkg.com/lucide@latest"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet" />
+
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          fontFamily: {
+            sans: ['Inter', 'system-ui', '-apple-system', 'sans-serif'],
+          },
+          colors: {
+            obsidian: {
+              950: '#0D0E10',
+              900: '#141518',
+              800: '#1E2025',
+              700: '#2A2D34',
+            },
+            gold: {
+              50:  '#FDF6E3',
+              100: '#FAEBBE',
+              200: '#F5DA8A',
+              400: '#EBC56B',
+              500: '#E5B853',
+              600: '#D4A13B',
+              700: '#B08023',
+            },
+            warmgray: '#F6F6F4',
+          }
+        }
+      }
+    };
+  </script>
+
+  <style>
+    /* Mobile-first polish & prevent iOS auto-zoom on form controls */
+    html, body {
+      -webkit-tap-highlight-color: transparent;
+      overscroll-behavior-y: none;
+      overflow-x: hidden;
+      background-color: #F6F6F4;
+    }
+    input, select, textarea {
+      font-size: 16px !important;
+    }
+
+    /* Hide scrollbars on horizontal filter pill bars */
+    .no-scrollbar::-webkit-scrollbar { display: none; }
+    .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+
+    /* Safe area insets for notched iOS & Android devices */
+    .safe-top { padding-top: env(safe-area-inset-top); }
+    .safe-bottom { padding-bottom: env(safe-area-inset-bottom); }
+
+    /* Bottom-sheet slide-up animation on mobile, fade-scale on desktop */
+    @keyframes sheetSlideUp {
+      from { transform: translateY(100%); opacity: 0.6; }
+      to { transform: translateY(0); opacity: 1; }
+    }
+    @keyframes modalFadeIn {
+      from { transform: scale(0.96); opacity: 0; }
+      to { transform: scale(1); opacity: 1; }
+    }
+    .modal-panel-anim {
+      animation: sheetSlideUp 0.24s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+    @media (min-width: 640px) {
+      .modal-panel-anim { animation: modalFadeIn 0.2s ease-out; }
+    }
+
+    /* Touch-friendly metallic gold range slider */
+    input[type="range"] {
+      -webkit-appearance: none;
+      appearance: none;
+      background: transparent;
+      cursor: pointer;
+      height: 36px;
+    }
+    input[type="range"]::-webkit-slider-runnable-track {
+      height: 8px;
+      border-radius: 9999px;
+      background: #d6d3cd;
+    }
+    input[type="range"]::-webkit-slider-thumb {
+      -webkit-appearance: none;
+      appearance: none;
+      margin-top: -10px;
+      background-color: #141518;
+      height: 28px;
+      width: 28px;
+      border-radius: 9999px;
+      border: 3px solid #E5B853;
+      box-shadow: 0 2px 8px rgba(20, 21, 24, 0.4);
+    }
+  </style>
+</head>
+<body class="bg-warmgray text-obsidian-900 font-sans antialiased">
+
+  <!-- ======================================================================= -->
+  <!-- 1. ROLE-BASED LOGIN SCREEN (OBSIDIAN & GOLD HERO)                       -->
+  <!-- ======================================================================= -->
+  <div id="loginScreen" class="min-h-screen bg-gradient-to-b from-obsidian-950 via-obsidian-900 to-obsidian-800 flex items-center justify-center p-4 sm:p-6 safe-top safe-bottom">
+    <div class="w-full max-w-md space-y-5">
+      <!-- Obsidian Brand Hero with Exact Company Logo -->
+      <div class="text-center text-white space-y-2.5">
+        <div class="relative w-28 h-28 mx-auto">
+          <div id="loginCrestMount" class="w-28 h-28 rounded-full overflow-hidden flex items-center justify-center bg-obsidian-950 ring-2 ring-gold-500/60 shadow-[0_10px_28px_rgba(229,184,83,0.3)]"></div>
+          <button type="button" id="loginLogoLoaderBtn" onclick="triggerLogoFilePicker()"
+            class="hidden absolute -bottom-2 left-1/2 -translate-x-1/2 whitespace-nowrap min-h-[32px] px-2.5 rounded-full bg-gold-500 hover:bg-gold-600 text-obsidian-950 text-[10px] font-black shadow-lg border border-obsidian-900 flex items-center gap-1 transition active:scale-95">
+            <i data-lucide="upload" class="w-3 h-3"></i>
+            <span>Load icon-512.png</span>
+          </button>
+        </div>
+        <input id="globalLogoFileInput" type="file" accept="image/png,image/jpeg,image/webp" onchange="handleLogoUpload(event)" class="hidden" />
+        <div class="space-y-1 pt-1">
+          <h1 class="text-xl sm:text-2xl font-black tracking-tight text-white leading-tight">Public Force Security Services</h1>
+          <p class="text-[11px] sm:text-xs font-extrabold tracking-[0.2em] text-gold-500 uppercase">Your Safety, Our Mission</p>
+        </div>
+        <div class="flex items-center justify-center gap-2 pt-0.5">
+          <span class="text-[11px] font-bold uppercase tracking-wider px-2.5 py-1 rounded-full bg-gold-500/15 text-gold-400 border border-gold-500/30">GeoAttend</span>
+          <span id="loginClock" class="text-xs font-mono font-semibold text-stone-300 bg-white/5 px-3 py-1 rounded-full border border-white/10">--:--:--</span>
+        </div>
+      </div>
+
+      <!-- High-Contrast Daylight-Friendly Login Card -->
+      <div class="bg-white rounded-3xl shadow-2xl border border-gold-500/25 overflow-hidden">
+        <!-- Segmented Role Toggle -->
+        <div class="grid grid-cols-2 bg-warmgray p-1.5 gap-1.5 border-b border-stone-200">
+          <button type="button" id="loginTabEmp" onclick="switchLoginTab('employee')"
+            class="min-h-[48px] rounded-2xl text-xs sm:text-sm font-extrabold flex items-center justify-center gap-1.5 transition">
+            <i data-lucide="user-check" class="w-4 h-4"></i>
+            <span>Employee Login</span>
+          </button>
+          <button type="button" id="loginTabAdmin" onclick="switchLoginTab('admin')"
+            class="min-h-[48px] rounded-2xl text-xs sm:text-sm font-extrabold flex items-center justify-center gap-1.5 transition">
+            <i data-lucide="lock" class="w-4 h-4"></i>
+            <span>Admin / Supervisor</span>
+          </button>
+        </div>
+
+        <!-- TAB 1: EMPLOYEE LOGIN FORM -->
+        <form id="employeeLoginForm" onsubmit="handleEmployeeLogin(event)" class="p-5 sm:p-6 space-y-4">
+          <div>
+            <label for="empLoginIdentifier" class="block text-xs font-bold uppercase tracking-wider text-stone-500 mb-1.5">
+              Employee ID or Mobile Number
+            </label>
+            <div class="relative">
+              <i data-lucide="id-card" class="w-5 h-5 text-stone-400 absolute left-3.5 top-1/2 -translate-y-1/2"></i>
+              <input id="empLoginIdentifier" type="text" autocomplete="username" placeholder="e.g. PFSS-101 or 9845022101"
+                class="w-full min-h-[50px] pl-11 pr-3.5 rounded-xl border border-stone-300 bg-warmgray text-obsidian-900 font-semibold focus:outline-none focus:ring-2 focus:ring-gold-500 focus:border-gold-600 focus:bg-white" />
+            </div>
+          </div>
+
+          <div>
+            <label for="empLoginPin" class="block text-xs font-bold uppercase tracking-wider text-stone-500 mb-1.5">
+              4-Digit Staff PIN
+            </label>
+            <div class="relative">
+              <i data-lucide="key-round" class="w-5 h-5 text-stone-400 absolute left-3.5 top-1/2 -translate-y-1/2"></i>
+              <input id="empLoginPin" type="password" inputmode="numeric" maxlength="4" autocomplete="current-password" placeholder="••••"
+                class="w-full min-h-[50px] pl-11 pr-3.5 rounded-xl border border-stone-300 bg-warmgray text-obsidian-900 font-mono tracking-[0.4em] font-bold focus:outline-none focus:ring-2 focus:ring-gold-500 focus:border-gold-600 focus:bg-white" />
+            </div>
+          </div>
+
+          <button type="submit"
+            class="w-full min-h-[52px] rounded-xl bg-obsidian-900 hover:bg-obsidian-800 text-gold-500 border border-gold-500/40 font-extrabold text-sm shadow-md flex items-center justify-center gap-2 transition active:scale-[0.98]">
+            <i data-lucide="log-in" class="w-5 h-5"></i>
+            <span>Sign In to Field App</span>
+          </button>
+
+          <!-- Collapsible Quick Demo Login Drawer (5 Multi-Department Staff) -->
+          <div class="border border-stone-200 rounded-2xl overflow-hidden bg-warmgray">
+            <button type="button" onclick="toggleQuickDemoDrawer()"
+              class="w-full min-h-[48px] px-3.5 flex items-center justify-between text-xs font-extrabold text-obsidian-900 hover:bg-gold-50 transition">
+              <span class="flex items-center gap-2">
+                <i data-lucide="zap" class="w-4 h-4 text-gold-600"></i>
+                <span>Quick Demo Login (1-Tap Multi-Dept Test)</span>
+              </span>
+              <i id="quickDemoChevron" data-lucide="chevron-down" class="w-4 h-4 text-stone-500 transition-transform duration-200"></i>
+            </button>
+            <div id="quickDemoDrawer" class="hidden border-t border-stone-200 p-3 space-y-2 bg-white">
+              <p class="text-[11px] text-stone-500">Tap any employee below to test the locked-down field check-in app:</p>
+              <div id="quickDemoButtons" class="space-y-2"></div>
+            </div>
+          </div>
+        </form>
+
+        <!-- TAB 2: ADMIN / SUPERVISOR PIN FORM -->
+        <form id="adminLoginForm" onsubmit="handleAdminLogin(event)" class="hidden p-5 sm:p-6 space-y-4">
+          <div class="rounded-2xl bg-gold-50 border border-gold-200 p-3.5 flex items-start gap-3">
+            <div class="w-10 h-10 rounded-xl bg-obsidian-900 text-gold-500 flex items-center justify-center shrink-0 border border-gold-500/40">
+              <i data-lucide="shield-check" class="w-5 h-5"></i>
+            </div>
+            <div class="text-xs text-obsidian-900">
+              <div class="font-extrabold">Admin &amp; Supervisor Console</div>
+              <p class="text-stone-600 mt-0.5">Live attendance audit, multi-department shift rosters, Bengaluru geofences, staff PINs &amp; CSV payroll export.</p>
+            </div>
+          </div>
+
+          <div>
+            <label for="adminLoginPin" class="block text-xs font-bold uppercase tracking-wider text-stone-500 mb-1.5">
+              Enter 4-Digit Admin PIN
+            </label>
+            <div class="relative">
+              <i data-lucide="lock" class="w-5 h-5 text-stone-400 absolute left-3.5 top-1/2 -translate-y-1/2"></i>
+              <input id="adminLoginPin" type="password" inputmode="numeric" maxlength="4" placeholder="••••"
+                class="w-full min-h-[52px] pl-11 pr-3.5 rounded-xl border border-stone-300 bg-warmgray text-obsidian-900 font-mono text-lg tracking-[0.5em] font-extrabold focus:outline-none focus:ring-2 focus:ring-gold-500 focus:bg-white" />
+            </div>
+            <p class="text-[11px] text-stone-500 mt-1.5 flex items-center justify-between">
+              <span>Demo Admin PIN: <strong class="font-mono text-obsidian-900 bg-gold-50 px-1.5 py-0.5 rounded border border-gold-200">1234</strong></span>
+              <span class="text-stone-400">Editable in Settings</span>
+            </p>
+          </div>
+
+          <button type="submit"
+            class="w-full min-h-[52px] rounded-xl bg-gold-500 hover:bg-gold-600 text-obsidian-950 font-black text-sm shadow-md flex items-center justify-center gap-2 transition active:scale-[0.98]">
+            <i data-lucide="unlock" class="w-5 h-5"></i>
+            <span>Unlock Admin Console</span>
+          </button>
+        </form>
+      </div>
+
+      <!-- Phone Install Guide Shortcut -->
+      <div class="text-center">
+        <button type="button" onclick="openInstallModal()"
+          class="min-h-[46px] px-4 rounded-xl bg-white/5 hover:bg-white/10 border border-gold-500/30 text-gold-400 text-xs font-bold inline-flex items-center gap-2 transition">
+          <i data-lucide="smartphone" class="w-4 h-4"></i>
+          <span>How to Install on Employees' Phones</span>
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ======================================================================= -->
+  <!-- 2. AUTHENTICATED APPLICATION SHELL                                      -->
+  <!-- ======================================================================= -->
+  <div id="appShell" class="hidden min-h-screen flex flex-col">
+
+    <!-- STICKY OBSIDIAN & GOLD TOP APP BAR -->
+    <header class="bg-obsidian-900 text-white sticky top-0 z-40 border-b border-gold-500/30 shadow-lg safe-top">
+      <div class="max-w-7xl mx-auto px-3 sm:px-6 lg:px-8">
+        <div class="h-16 flex items-center justify-between gap-2 sm:gap-3">
+          <!-- Brand Mini-Logo (36x36) + Title + Live Clock -->
+          <div class="flex items-center gap-2.5 min-w-0">
+            <div id="headerCrestMount" class="w-9 h-9 rounded-full shrink-0 flex items-center justify-center overflow-hidden ring-1 ring-gold-500/50 bg-obsidian-950"></div>
+            <div class="min-w-0">
+              <div class="flex items-center gap-1.5">
+                <h1 class="text-xs sm:text-sm font-black tracking-tight text-white leading-tight truncate">Public Force Security Services</h1>
+              </div>
+              <div class="flex items-center gap-1.5 mt-0.5">
+                <span id="headerRoleContext" class="text-[10px] font-bold text-gold-400 truncate max-w-[130px] sm:max-w-[200px]">GeoAttend</span>
+                <span class="text-stone-600">•</span>
+                <span id="headerClockSub" class="text-[11px] font-mono text-stone-300 font-semibold truncate">--:--:--</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Desktop Navigation Bar (3 tabs Employee / 5 tabs Admin) -->
+          <nav id="desktopNav" class="hidden md:flex items-center bg-obsidian-800 p-1 rounded-xl border border-white/10 gap-1" aria-label="Desktop Navigation"></nav>
+
+          <!-- Right Actions: Install App + Logout -->
+          <div class="flex items-center gap-1.5 sm:gap-2 shrink-0">
+            <button type="button" onclick="openInstallModal()" title="Install on Phone"
+              class="min-h-[42px] px-2.5 sm:px-3 rounded-xl bg-gold-500/15 hover:bg-gold-500/25 border border-gold-500/40 text-gold-400 text-xs font-bold flex items-center gap-1.5 transition active:scale-95">
+              <i data-lucide="smartphone" class="w-4 h-4"></i>
+              <span class="hidden sm:inline">Install</span>
+            </button>
+
+            <button type="button" onclick="handleLogout()" title="Logout / Switch Role"
+              class="min-h-[42px] px-2.5 sm:px-3 rounded-xl bg-obsidian-800 hover:bg-red-600/25 border border-white/15 hover:border-red-500/50 text-stone-200 text-xs font-bold flex items-center gap-1.5 transition active:scale-95">
+              <i data-lucide="log-out" class="w-4 h-4 text-red-400"></i>
+              <span class="hidden sm:inline">Logout</span>
+            </button>
+          </div>
+        </div>
+      </div>
+    </header>
+
+    <!-- MAIN CONTENT CONTAINER -->
+    <main class="flex-1 max-w-7xl w-full mx-auto px-3 sm:px-6 lg:px-8 pt-4 pb-28 md:py-6">
+
+      <!-- =================================================================== -->
+      <!-- EMPLOYEE VIEW 1: CHECK-IN (LOCKED-DOWN FIELD APP)                   -->
+      <!-- =================================================================== -->
+      <section id="view-emp-checkin" class="hidden space-y-4 sm:space-y-5">
+
+        <!-- Employee Identity Banner -->
+        <div class="bg-white rounded-2xl border border-stone-200 shadow-sm p-4 flex items-center justify-between gap-3">
+          <div class="flex items-center gap-3 min-w-0">
+            <div id="empAvatarCircle" class="w-12 h-12 rounded-2xl bg-obsidian-900 text-gold-500 border border-gold-500/40 font-black text-base flex items-center justify-center shrink-0 shadow-sm">
+              LD
+            </div>
+            <div class="min-w-0">
+              <div class="flex flex-wrap items-center gap-1.5">
+                <h2 id="empProfileName" class="text-base font-extrabold text-obsidian-900 truncate">Employee Name</h2>
+                <span id="empProfileRoleBadge"></span>
+              </div>
+              <div id="empProfileMeta" class="text-xs font-mono text-stone-500 mt-0.5">PFSS-101 • +91 98450 22101</div>
+            </div>
+          </div>
+          <span id="empDutyStatePill" class="px-2.5 py-1 rounded-full text-[11px] font-extrabold bg-stone-100 text-stone-600 shrink-0">Off Duty</span>
+        </div>
+
+        <!-- ACTIVE SHIFT LIVE CARD (Shown while Checked In) -->
+        <div id="empActiveShiftCard" class="hidden rounded-2xl bg-gradient-to-br from-obsidian-950 via-obsidian-900 to-obsidian-800 text-white p-5 shadow-xl border border-gold-500/40 space-y-4">
+          <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+            <div class="space-y-1.5">
+              <div class="flex flex-wrap items-center gap-1.5">
+                <span class="inline-flex items-center gap-1.5 text-[11px] font-extrabold uppercase tracking-wider bg-[#16A34A]/25 border border-[#16A34A]/50 text-emerald-300 px-2.5 py-1 rounded-full">
+                  <span class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
+                  Shift Active
+                </span>
+                <span id="empActivePunctPill" class="text-[11px] font-bold uppercase px-2.5 py-1 rounded-full bg-white/10 text-stone-200">On-Time</span>
+                <span id="empActiveReliefPill" class="hidden text-[11px] font-bold uppercase px-2.5 py-1 rounded-full bg-gold-500 text-obsidian-950">Relief Duty</span>
+                <span id="empActiveOverridePill" class="hidden text-[11px] font-bold uppercase px-2.5 py-1 rounded-full bg-amber-300 text-obsidian-950">Override</span>
+              </div>
+              <h3 id="empActiveSiteTitle" class="text-lg font-black leading-snug text-gold-400">Orion Tech Park</h3>
+              <p id="empActiveShiftMeta" class="text-xs sm:text-sm text-stone-300">Morning Shift • Checked in at 06:02 AM</p>
+            </div>
+
+            <div class="bg-black/40 rounded-2xl p-3.5 sm:text-right border border-gold-500/25">
+              <span class="text-[10px] uppercase tracking-wider text-gold-400 font-bold block">Shift Duration</span>
+              <span id="empActiveTimer" class="text-3xl font-mono font-black tracking-tight text-white">00:00:00</span>
+            </div>
+          </div>
+
+          <button type="button" onclick="handleEmployeeCheckOut()"
+            class="w-full min-h-[56px] px-5 rounded-2xl bg-[#DC2626] hover:bg-red-700 text-white font-black text-base tracking-wide shadow-lg flex items-center justify-center gap-2 transition active:scale-[0.98]">
+            <i data-lucide="log-out" class="w-5 h-5"></i>
+            <span>CHECK OUT</span>
+          </button>
+        </div>
+
+        <!-- CHECK-IN WORKFLOW (Hidden while already checked in) -->
+        <div id="empCheckInFlow" class="grid grid-cols-1 lg:grid-cols-12 gap-4 sm:gap-5">
+
+          <!-- LEFT: Assigned Site & Shift Card + Selfie / Proof of Presence -->
+          <div class="lg:col-span-6 space-y-4">
+            <!-- 1. Assigned Site & Shift -->
+            <div class="bg-white rounded-2xl shadow-sm border border-stone-200 p-4 sm:p-5 space-y-4">
+              <div class="flex items-center justify-between gap-2">
+                <div class="flex items-center gap-2">
+                  <span class="w-7 h-7 rounded-full bg-obsidian-900 text-gold-500 text-xs font-black flex items-center justify-center">1</span>
+                  <h3 class="text-base font-extrabold text-obsidian-900">Assigned Site &amp; Shift</h3>
+                </div>
+                <button type="button" onclick="toggleReliefMode()"
+                  class="min-h-[42px] px-3 rounded-xl bg-gold-50 hover:bg-gold-100 text-obsidian-900 border border-gold-200 text-xs font-bold flex items-center gap-1.5 transition active:scale-95">
+                  <i data-lucide="repeat" class="w-3.5 h-3.5 text-gold-700"></i>
+                  <span id="reliefToggleLabel">Switch / Relief Site</span>
+                </button>
+              </div>
+
+              <!-- Shift Summary Box -->
+              <div id="empShiftSummaryBox" class="rounded-2xl p-4 border space-y-2"></div>
+
+              <!-- Relief / Unscheduled Selectors -->
+              <div id="reliefSelectorsWrap" class="hidden space-y-3 pt-1">
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                  <div>
+                    <label for="empSiteSelect" class="block text-[11px] font-bold uppercase tracking-wider text-stone-500 mb-1">Client Site</label>
+                    <select id="empSiteSelect" onchange="handleEmpSiteChange()"
+                      class="w-full min-h-[48px] rounded-xl border border-stone-300 bg-warmgray px-3.5 font-semibold text-obsidian-900 focus:outline-none focus:ring-2 focus:ring-gold-500"></select>
+                  </div>
+                  <div>
+                    <label for="empShiftSelect" class="block text-[11px] font-bold uppercase tracking-wider text-stone-500 mb-1">Shift</label>
+                    <select id="empShiftSelect" onchange="handleEmpShiftChange()"
+                      class="w-full min-h-[48px] rounded-xl border border-stone-300 bg-warmgray px-3.5 font-semibold text-obsidian-900 focus:outline-none focus:ring-2 focus:ring-gold-500"></select>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Status Pills -->
+              <div class="flex flex-wrap items-center justify-between gap-2 pt-1">
+                <div class="flex flex-wrap items-center gap-2">
+                  <span id="empDutyTypeBadge" class="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-bold">Scheduled</span>
+                  <span id="empPunctualityBadge" class="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-bold">On-Time</span>
+                </div>
+                <span id="empFenceChip" class="text-xs font-mono font-bold text-stone-600 bg-warmgray border border-stone-200 px-2.5 py-1 rounded-lg">Fence: 150m</span>
+              </div>
+            </div>
+
+            <!-- 3. Selfie / Proof of Presence -->
+            <div class="bg-white rounded-2xl shadow-sm border border-stone-200 p-4 sm:p-5 space-y-3.5">
+              <div class="flex items-center justify-between">
+                <div class="flex items-center gap-2">
+                  <span class="w-7 h-7 rounded-full bg-obsidian-900 text-gold-500 text-xs font-black flex items-center justify-center">3</span>
+                  <h3 class="text-base font-extrabold text-obsidian-900">Selfie / Proof of Presence</h3>
+                </div>
+                <span id="selfieRequirementPill" class="text-xs font-bold px-2.5 py-1 rounded-lg bg-stone-100 text-stone-600">Optional</span>
+              </div>
+
+              <div class="flex items-center gap-3.5 bg-warmgray rounded-2xl p-3 border border-stone-200">
+                <div class="relative w-20 h-20 sm:w-24 sm:h-24 rounded-xl bg-obsidian-900 overflow-hidden shrink-0 flex items-center justify-center border border-gold-500/40">
+                  <video id="cameraVideo" autoplay playsinline muted class="hidden w-full h-full object-cover"></video>
+                  <canvas id="selfieCanvas" width="240" height="240" class="hidden"></canvas>
+                  <img id="selfiePreviewImg" alt="Verification proof" class="hidden w-full h-full object-cover" />
+                  <div id="selfiePlaceholder" class="text-center p-1">
+                    <i data-lucide="camera" class="w-6 h-6 text-gold-500/70 mx-auto"></i>
+                    <span class="text-[10px] text-stone-400 font-semibold block mt-1">No Photo</span>
+                  </div>
+                </div>
+
+                <div class="flex-1 grid grid-cols-1 sm:grid-cols-2 gap-2">
+                  <button type="button" id="btnStartCamera" onclick="startCamera()"
+                    class="min-h-[48px] px-3 rounded-xl bg-obsidian-900 hover:bg-obsidian-800 text-gold-400 border border-gold-500/30 text-xs font-bold flex items-center justify-center gap-1.5 transition active:scale-95">
+                    <i data-lucide="camera" class="w-4 h-4"></i>
+                    <span>Live Selfie</span>
+                  </button>
+                  <button type="button" id="btnCapturePhoto" onclick="captureCameraPhoto()"
+                    class="hidden min-h-[48px] px-3 rounded-xl bg-[#16A34A] hover:bg-green-700 text-white text-xs font-bold flex items-center justify-center gap-1.5 transition active:scale-95">
+                    <i data-lucide="aperture" class="w-4 h-4"></i>
+                    <span>Capture Now</span>
+                  </button>
+                  <button type="button" onclick="generateDigitalBadge()"
+                    class="min-h-[48px] px-3 rounded-xl bg-white hover:bg-gold-50 text-obsidian-900 border border-stone-300 text-xs font-bold flex items-center justify-center gap-1.5 transition active:scale-95">
+                    <i data-lucide="badge-check" class="w-4 h-4 text-gold-600"></i>
+                    <span>Digital Badge</span>
+                  </button>
+                  <button type="button" id="btnClearPhoto" onclick="clearSelfie()"
+                    class="hidden sm:col-span-2 min-h-[40px] px-3 rounded-xl bg-red-50 hover:bg-red-100 text-[#DC2626] text-xs font-bold transition">
+                    Remove Photo
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- RIGHT: GPS Geofence Verification + Demo Radar + Primary CHECK IN -->
+          <div class="lg:col-span-6 space-y-4">
+            <div class="bg-white rounded-2xl shadow-sm border border-stone-200 p-4 sm:p-5 space-y-4">
+              <div class="flex items-center justify-between gap-2">
+                <div class="flex items-center gap-2">
+                  <span class="w-7 h-7 rounded-full bg-obsidian-900 text-gold-500 text-xs font-black flex items-center justify-center">2</span>
+                  <h3 class="text-base font-extrabold text-obsidian-900">GPS Geofence Verification</h3>
+                </div>
+                <span id="gpsSourceTag" class="text-[11px] font-bold px-2.5 py-1 rounded-lg bg-warmgray border border-stone-200 text-stone-700">GPS Ready</span>
+              </div>
+
+              <!-- Prominent Obsidian & Gold Get My GPS Location Button -->
+              <button type="button" id="btnGetRealGPS" onclick="useRealDeviceGPS()"
+                class="w-full min-h-[52px] px-4 rounded-xl bg-obsidian-900 hover:bg-obsidian-800 text-gold-400 border border-gold-500/40 font-extrabold text-sm shadow-sm flex items-center justify-center gap-2 transition active:scale-[0.98]">
+                <i data-lucide="crosshair" class="w-5 h-5 text-gold-500"></i>
+                <span>Get My GPS Location</span>
+              </button>
+
+              <!-- Color-Coded Inside/Outside Geofence Banner -->
+              <div id="geofenceStatusCard" class="rounded-2xl p-4 border-2 flex items-center justify-between gap-3 transition-colors">
+                <div class="flex items-center gap-3 min-w-0">
+                  <div id="geofenceStatusIconWrap" class="w-11 h-11 rounded-full flex items-center justify-center shrink-0"></div>
+                  <div class="min-w-0">
+                    <div id="geofenceStatusTitle" class="text-sm sm:text-base font-extrabold leading-tight">Inside Geofence</div>
+                    <div id="geofenceStatusSub" class="text-xs opacity-85 mt-0.5 truncate">Verified location</div>
+                  </div>
+                </div>
+                <div class="text-right shrink-0">
+                  <div id="distanceBigReadout" class="text-2xl sm:text-3xl font-mono font-black leading-none">20m</div>
+                  <div id="distanceLimitReadout" class="text-[11px] font-bold opacity-80 mt-1">Max: 150m</div>
+                </div>
+              </div>
+
+              <!-- Coordinates Readout -->
+              <div class="grid grid-cols-2 gap-2 text-xs bg-warmgray rounded-xl p-3 border border-stone-200 font-mono">
+                <div>
+                  <span class="font-sans text-[10px] font-bold uppercase text-stone-400 block">Site Center</span>
+                  <span id="siteLatLngText" class="text-obsidian-900 font-semibold">13.0110, 77.5549</span>
+                </div>
+                <div class="text-right">
+                  <span class="font-sans text-[10px] font-bold uppercase text-stone-400 block">Your GPS Fix</span>
+                  <span id="empLatLngText" class="text-[#16A34A] font-semibold">13.0112, 77.5550</span>
+                </div>
+              </div>
+
+              <!-- Collapsible Demo GPS Simulator & Interactive Radar (Hidden in Production Mode) -->
+              <div id="demoSimulatorBlock" class="border border-gold-200 rounded-2xl overflow-hidden bg-gold-50/50">
+                <button type="button" onclick="toggleSimulatorDrawer()"
+                  class="w-full min-h-[48px] px-4 flex items-center justify-between text-left hover:bg-gold-50 transition">
+                  <div class="flex items-center gap-2 min-w-0">
+                    <i data-lucide="radar" class="w-4 h-4 text-gold-700 shrink-0"></i>
+                    <span class="text-xs font-extrabold text-obsidian-900 truncate">Demo GPS Simulator &amp; Interactive Radar</span>
+                    <span class="text-[10px] font-bold px-2 py-0.5 rounded-full bg-gold-500 text-obsidian-950 shrink-0">Demo</span>
+                  </div>
+                  <i id="simDrawerChevron" data-lucide="chevron-down" class="w-5 h-5 text-stone-500 transition-transform duration-200 shrink-0"></i>
+                </button>
+
+                <div id="simulatorDrawerContent" class="hidden p-4 bg-white border-t border-gold-200 space-y-4">
+                  <p class="text-[11px] text-stone-600 bg-warmgray px-3 py-2 rounded-xl border border-stone-200">
+                    <strong>Testing Tool:</strong> Enable <em>Hide Demo GPS Simulator</em> in <strong>Admin → Settings</strong> before live rollout.
+                  </p>
+
+                  <!-- Responsive HTML5 Canvas Radar -->
+                  <div class="bg-obsidian-950 rounded-2xl p-3 flex flex-col items-center border border-gold-500/30">
+                    <div class="w-full flex items-center justify-between text-[11px] font-mono text-gold-400 mb-2 px-1">
+                      <span>TAP / DRAG PIN ON RADAR</span>
+                      <span id="radarDistTag" class="text-emerald-400 font-bold">20m</span>
+                    </div>
+                    <div id="radarContainer" class="w-full max-w-[260px] aspect-square relative">
+                      <canvas id="radarCanvas" class="w-full h-full rounded-full cursor-crosshair touch-none block"></canvas>
+                    </div>
+                  </div>
+
+                  <!-- Preset Buttons -->
+                  <div class="grid grid-cols-3 gap-2">
+                    <button type="button" onclick="simulatePreset('inside')"
+                      class="min-h-[48px] px-2 rounded-xl bg-green-50 hover:bg-green-100 text-green-900 border border-green-300 text-xs font-bold transition active:scale-95">
+                      Inside (20m)
+                    </button>
+                    <button type="button" onclick="simulatePreset('edge')"
+                      class="min-h-[48px] px-2 rounded-xl bg-gold-50 hover:bg-gold-100 text-obsidian-900 border border-gold-400 text-xs font-bold transition active:scale-95">
+                      Edge Fence
+                    </button>
+                    <button type="button" onclick="simulatePreset('outside')"
+                      class="min-h-[48px] px-2 rounded-xl bg-red-50 hover:bg-red-100 text-red-900 border border-red-300 text-xs font-bold transition active:scale-95">
+                      Outside (380m)
+                    </button>
+                  </div>
+
+                  <!-- Distance Slider -->
+                  <div>
+                    <div class="flex items-center justify-between text-xs mb-1">
+                      <span class="font-bold text-stone-600">Simulated Distance</span>
+                      <span id="simSliderReadout" class="font-mono font-bold text-obsidian-900">20 m</span>
+                    </div>
+                    <input type="range" id="distanceSlider" min="0" max="600" value="20" oninput="handleDistanceSlider(this.value)" class="w-full" />
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Supervisor Override + Large Green CHECK IN Button -->
+            <div class="bg-white rounded-2xl shadow-sm border border-stone-200 p-4 sm:p-5 space-y-4">
+              <div id="overridePanel" class="hidden rounded-xl bg-gold-50 border-2 border-gold-500 p-4 space-y-3">
+                <div class="flex items-center justify-between gap-3">
+                  <div class="flex items-start gap-2.5">
+                    <i data-lucide="shield-alert" class="w-5 h-5 text-gold-700 shrink-0 mt-0.5"></i>
+                    <div>
+                      <h4 class="text-xs font-extrabold uppercase tracking-wide text-obsidian-900">Supervisor Override</h4>
+                      <p class="text-xs text-stone-700 mt-0.5">Outside geofence. Enable override &amp; enter reason to punch in.</p>
+                    </div>
+                  </div>
+                  <label class="relative inline-flex items-center cursor-pointer shrink-0">
+                    <input type="checkbox" id="overrideToggle" onchange="updateGeofenceUI()" class="sr-only peer" />
+                    <div class="w-12 h-7 bg-stone-300 rounded-full peer peer-checked:bg-gold-600 after:content-[''] after:absolute after:top-[3px] after:left-[3px] after:bg-white after:rounded-full after:h-[22px] after:w-[22px] after:transition-all peer-checked:after:translate-x-5 shadow-inner"></div>
+                  </label>
+                </div>
+                <div id="overrideNoteWrap" class="hidden">
+                  <input id="overrideNoteInput" type="text" oninput="updateGeofenceUI()"
+                    placeholder="Supervisor name &amp; reason (min 4 chars)..."
+                    class="w-full min-h-[48px] rounded-xl border border-gold-600 bg-white px-3.5 text-obsidian-900 focus:outline-none focus:ring-2 focus:ring-gold-500" />
+                </div>
+              </div>
+
+              <button type="button" id="btnEmpCheckIn" onclick="handleEmployeeCheckIn()"
+                class="w-full min-h-[58px] px-5 rounded-2xl font-black text-base tracking-wide text-white bg-[#16A34A] hover:bg-green-700 disabled:bg-stone-300 disabled:text-stone-500 disabled:cursor-not-allowed shadow-md flex items-center justify-center gap-2 transition active:scale-[0.98]">
+                <i data-lucide="check-circle-2" class="w-6 h-6"></i>
+                <span id="btnEmpCheckInLabel">CHECK IN</span>
+              </button>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- =================================================================== -->
+      <!-- EMPLOYEE VIEW 2: MY SHIFTS                                          -->
+      <!-- =================================================================== -->
+      <section id="view-emp-shifts" class="hidden space-y-4">
+        <div class="bg-white rounded-2xl shadow-sm border border-stone-200 p-4 sm:p-5 space-y-4">
+          <div>
+            <h2 class="text-lg font-extrabold text-obsidian-900">My Assigned Shifts</h2>
+            <p class="text-xs text-stone-500">Your recurring daily and date-specific rosters, site addresses &amp; duty instructions</p>
+          </div>
+          <div id="empMyShiftsList" class="grid grid-cols-1 md:grid-cols-2 gap-3"></div>
+          <div id="empMyShiftsEmpty" class="hidden text-center py-10 text-stone-500 text-sm">
+            No shifts assigned to your ID yet. Contact your Supervisor.
+          </div>
+        </div>
+      </section>
+
+      <!-- =================================================================== -->
+      <!-- EMPLOYEE VIEW 3: MY HISTORY                                         -->
+      <!-- =================================================================== -->
+      <section id="view-emp-history" class="hidden space-y-4">
+        <div class="bg-white rounded-2xl shadow-sm border border-stone-200 p-4 sm:p-5 space-y-4">
+          <div class="flex items-center justify-between gap-2">
+            <div>
+              <h2 class="text-lg font-extrabold text-obsidian-900">My Attendance History</h2>
+              <p class="text-xs text-stone-500">Your check-in/out logs, hours worked, GPS verification &amp; proof</p>
+            </div>
+            <span id="empHistoryCountBadge" class="px-3 py-1 rounded-full bg-gold-50 text-obsidian-900 border border-gold-200 text-xs font-extrabold">0 Punches</span>
+          </div>
+          <div id="empMyHistoryList" class="space-y-3"></div>
+          <div id="empMyHistoryEmpty" class="hidden text-center py-10 text-stone-500 text-sm">
+            No attendance punches recorded for your account yet.
+          </div>
+        </div>
+      </section>
+
+      <!-- =================================================================== -->
+      <!-- ADMIN VIEW 1: DASHBOARD                                             -->
+      <!-- =================================================================== -->
+      <section id="view-admin-dashboard" class="hidden space-y-4">
+        <!-- 2x2 Mobile KPI Grid -->
+        <div class="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
+          <div class="bg-white rounded-2xl p-4 border border-stone-200 shadow-sm">
+            <div class="flex items-center justify-between text-xs font-bold text-stone-500">
+              <span>On-Duty Now</span>
+              <i data-lucide="user-check" class="w-4 h-4 text-[#16A34A]"></i>
+            </div>
+            <div id="kpiOnDuty" class="text-2xl sm:text-3xl font-black text-[#16A34A] mt-1.5">0</div>
+            <div class="text-[11px] text-stone-500 font-medium mt-0.5">Active shifts</div>
+          </div>
+
+          <div class="bg-white rounded-2xl p-4 border border-stone-200 shadow-sm">
+            <div class="flex items-center justify-between text-xs font-bold text-stone-500">
+              <span>Today's Punches</span>
+              <i data-lucide="clipboard-check" class="w-4 h-4 text-gold-600"></i>
+            </div>
+            <div id="kpiPresentToday" class="text-2xl sm:text-3xl font-black text-obsidian-900 mt-1.5">0</div>
+            <div class="text-[11px] text-stone-500 font-medium mt-0.5">Logged today</div>
+          </div>
+
+          <div class="bg-white rounded-2xl p-4 border border-stone-200 shadow-sm">
+            <div class="flex items-center justify-between text-xs font-bold text-stone-500">
+              <span>Late / Override</span>
+              <i data-lucide="shield-alert" class="w-4 h-4 text-[#DC2626]"></i>
+            </div>
+            <div id="kpiLateOverride" class="text-2xl sm:text-3xl font-black text-[#DC2626] mt-1.5">0</div>
+            <div id="kpiLateOverrideSub" class="text-[11px] text-stone-500 font-medium mt-0.5">0 late • 0 override</div>
+          </div>
+
+          <div class="bg-white rounded-2xl p-4 border border-stone-200 shadow-sm">
+            <div class="flex items-center justify-between text-xs font-bold text-stone-500">
+              <span>Total Hours</span>
+              <i data-lucide="clock" class="w-4 h-4 text-gold-600"></i>
+            </div>
+            <div id="kpiTotalHours" class="text-2xl sm:text-3xl font-black text-obsidian-900 mt-1.5">0.0h</div>
+            <div class="text-[11px] text-stone-500 font-medium mt-0.5">All logged shifts</div>
+          </div>
+        </div>
+
+        <!-- Horizontal Department Headcount Breakdown Pills -->
+        <div class="bg-white rounded-2xl shadow-sm border border-stone-200 p-4 space-y-2.5">
+          <div class="flex items-center justify-between">
+            <span class="text-xs font-extrabold uppercase tracking-wider text-stone-600">Department Headcount (On-Duty / Total)</span>
+            <span class="text-[11px] text-stone-400">Tap to filter</span>
+          </div>
+          <div id="adminRoleBreakdownPills" class="flex items-center gap-2 overflow-x-auto no-scrollbar pb-1"></div>
+        </div>
+
+        <!-- Attendance Log Card -->
+        <div class="bg-white rounded-2xl shadow-sm border border-stone-200 p-4 sm:p-5 space-y-4">
+          <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+            <div>
+              <h2 class="text-base sm:text-lg font-extrabold text-obsidian-900">Attendance Log</h2>
+              <p class="text-xs text-stone-500">Tap any entry for GPS audit, selfie preview &amp; force check-out</p>
+            </div>
+            <button type="button" onclick="exportFilteredCSV()"
+              class="w-full sm:w-auto min-h-[48px] px-4 rounded-xl bg-obsidian-900 hover:bg-obsidian-800 text-gold-400 border border-gold-500/40 text-xs font-extrabold shadow-sm flex items-center justify-center gap-1.5 transition active:scale-95">
+              <i data-lucide="download" class="w-4 h-4"></i>
+              <span>Export Payroll CSV</span>
+            </button>
+          </div>
+
+          <!-- Search & Site/Status Filters -->
+          <div class="grid grid-cols-1 sm:grid-cols-3 gap-2.5">
+            <div class="relative">
+              <i data-lucide="search" class="w-4 h-4 text-stone-400 absolute left-3.5 top-1/2 -translate-y-1/2"></i>
+              <input id="adminSearch" type="text" oninput="renderAdminDashboard()" placeholder="Search name, ID, role..."
+                class="w-full min-h-[48px] pl-10 pr-3 rounded-xl border border-stone-300 bg-warmgray focus:outline-none focus:ring-2 focus:ring-gold-500 focus:bg-white" />
+            </div>
+            <select id="adminFilterSite" onchange="renderAdminDashboard()"
+              class="w-full min-h-[48px] px-3.5 rounded-xl border border-stone-300 bg-warmgray font-medium focus:outline-none focus:ring-2 focus:ring-gold-500">
+              <option value="ALL">All Client Sites</option>
+            </select>
+            <select id="adminFilterStatus" onchange="renderAdminDashboard()"
+              class="w-full min-h-[48px] px-3.5 rounded-xl border border-stone-300 bg-warmgray font-medium focus:outline-none focus:ring-2 focus:ring-gold-500">
+              <option value="ALL">All Statuses</option>
+              <option value="ACTIVE">On Duty (Active)</option>
+              <option value="COMPLETED">Completed</option>
+              <option value="LATE">Late Arrivals</option>
+              <option value="RELIEF">Relief Duty</option>
+              <option value="OVERRIDE">Geofence Override</option>
+            </select>
+          </div>
+
+          <!-- Mobile Cards (< 768px) -->
+          <div id="adminMobileCards" class="md:hidden space-y-3"></div>
+
+          <!-- Desktop Table (>= 768px) -->
+          <div class="hidden md:block overflow-x-auto">
+            <table class="w-full text-left border-collapse">
+              <thead>
+                <tr class="border-y border-stone-200 bg-warmgray text-[11px] font-bold uppercase tracking-wider text-stone-500">
+                  <th class="py-3 px-4">Staff</th>
+                  <th class="py-3 px-3">Department</th>
+                  <th class="py-3 px-3">Site &amp; Shift</th>
+                  <th class="py-3 px-3">Date &amp; In/Out</th>
+                  <th class="py-3 px-3">Hours</th>
+                  <th class="py-3 px-3">Status &amp; GPS</th>
+                  <th class="py-3 px-4 text-right">Actions</th>
+                </tr>
+              </thead>
+              <tbody id="adminDesktopBody" class="divide-y divide-stone-100 text-sm"></tbody>
+            </table>
+          </div>
+
+          <div id="emptyAdminState" class="hidden text-center py-10 text-stone-500 text-sm">
+            No attendance records match your filters.
+          </div>
+        </div>
+      </section>
+
+      <!-- =================================================================== -->
+      <!-- ADMIN VIEW 2: ROSTER                                                -->
+      <!-- =================================================================== -->
+      <section id="view-admin-roster" class="hidden space-y-4">
+        <div class="bg-white rounded-2xl shadow-sm border border-stone-200 p-4 sm:p-5 space-y-4">
+          <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+            <div>
+              <h2 class="text-lg font-extrabold text-obsidian-900">Shift Roster &amp; Assignments</h2>
+              <p class="text-xs text-stone-500">Assign staff across any department to a Site + Shift with custom duty notes</p>
+            </div>
+            <button type="button" onclick="openAssignmentModal()"
+              class="w-full sm:w-auto min-h-[48px] px-4 rounded-xl bg-gold-500 hover:bg-gold-600 text-obsidian-950 text-sm font-black shadow-sm flex items-center justify-center gap-2 transition active:scale-95">
+              <i data-lucide="plus" class="w-4 h-4"></i>
+              <span>Assign Shift</span>
+            </button>
+          </div>
+
+          <div class="space-y-3">
+            <select id="rosterFilterSite" onchange="renderRosterView()"
+              class="w-full sm:max-w-xs min-h-[48px] rounded-xl border border-stone-300 bg-warmgray px-3.5 font-semibold text-obsidian-900 focus:outline-none focus:ring-2 focus:ring-gold-500">
+              <option value="ALL">All Client Sites</option>
+            </select>
+            <div id="rosterRolePills" class="flex items-center gap-2 overflow-x-auto no-scrollbar pb-1"></div>
+          </div>
+
+          <div id="rosterMobileCards" class="md:hidden space-y-3"></div>
+
+          <div class="hidden md:block overflow-x-auto">
+            <table class="w-full text-left border-collapse">
+              <thead>
+                <tr class="border-y border-stone-200 bg-warmgray text-[11px] font-bold uppercase tracking-wider text-stone-500">
+                  <th class="py-3 px-4">Employee</th>
+                  <th class="py-3 px-3">Department</th>
+                  <th class="py-3 px-3">Site &amp; Shift</th>
+                  <th class="py-3 px-3">Schedule</th>
+                  <th class="py-3 px-3">Duty / Zone Notes</th>
+                  <th class="py-3 px-4 text-right">Action</th>
+                </tr>
+              </thead>
+              <tbody id="rosterDesktopBody" class="divide-y divide-stone-100 text-sm"></tbody>
+            </table>
+          </div>
+
+          <div id="emptyRosterState" class="hidden text-center py-10 text-stone-500 text-sm">
+            No shift assignments match your filters.
+          </div>
+        </div>
+      </section>
+
+      <!-- =================================================================== -->
+      <!-- ADMIN VIEW 3: SITES & SHIFT TIMINGS                                 -->
+      <!-- =================================================================== -->
+      <section id="view-admin-sites" class="hidden space-y-4">
+        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 bg-white rounded-2xl p-4 sm:p-5 border border-stone-200 shadow-sm">
+          <div>
+            <h2 class="text-lg font-extrabold text-obsidian-900">Client Sites &amp; Shift Timings</h2>
+            <p class="text-xs text-stone-500">Manage Bengaluru geofences, radii &amp; per-site Morning, Afternoon &amp; Night shift timings</p>
+          </div>
+          <button type="button" onclick="openAddSiteModal()"
+            class="w-full sm:w-auto min-h-[48px] px-4 rounded-xl bg-gold-500 hover:bg-gold-600 text-obsidian-950 text-sm font-black shadow-sm flex items-center justify-center gap-2 transition active:scale-95">
+            <i data-lucide="map-pin-plus" class="w-4 h-4"></i>
+            <span>Add Client Site</span>
+          </button>
+        </div>
+
+        <div id="sitesListContainer" class="grid grid-cols-1 lg:grid-cols-2 gap-4"></div>
+      </section>
+
+      <!-- =================================================================== -->
+      <!-- ADMIN VIEW 4: STAFF DIRECTORY & CREDENTIALS                         -->
+      <!-- =================================================================== -->
+      <section id="view-admin-staff" class="hidden space-y-4">
+        <div class="bg-white rounded-2xl shadow-sm border border-stone-200 p-4 sm:p-5 space-y-4">
+          <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+            <div>
+              <h2 class="text-lg font-extrabold text-obsidian-900">Staff Directory &amp; Login PINs</h2>
+              <p class="text-xs text-stone-500">Manage employees across all departments &amp; copy WhatsApp/SMS login credentials</p>
+            </div>
+            <button type="button" onclick="openStaffModal()"
+              class="w-full sm:w-auto min-h-[48px] px-4 rounded-xl bg-obsidian-900 hover:bg-obsidian-800 text-gold-400 border border-gold-500/40 text-sm font-extrabold shadow-sm flex items-center justify-center gap-2 transition active:scale-95">
+              <i data-lucide="user-plus" class="w-4 h-4"></i>
+              <span>Add Employee</span>
+            </button>
+          </div>
+
+          <div class="space-y-3">
+            <div class="relative sm:max-w-sm">
+              <i data-lucide="search" class="w-4 h-4 text-stone-400 absolute left-3.5 top-1/2 -translate-y-1/2"></i>
+              <input id="staffSearch" type="text" oninput="renderStaffDirectory()" placeholder="Search name, ID, mobile..."
+                class="w-full min-h-[48px] pl-10 pr-3 rounded-xl border border-stone-300 bg-warmgray focus:outline-none focus:ring-2 focus:ring-gold-500 focus:bg-white" />
+            </div>
+            <div id="staffRolePills" class="flex items-center gap-2 overflow-x-auto no-scrollbar pb-1"></div>
+          </div>
+
+          <div id="staffMobileCards" class="md:hidden space-y-3"></div>
+
+          <div class="hidden md:block overflow-x-auto">
+            <table class="w-full text-left border-collapse">
+              <thead>
+                <tr class="border-y border-stone-200 bg-warmgray text-[11px] font-bold uppercase tracking-wider text-stone-500">
+                  <th class="py-3 px-4">Employee</th>
+                  <th class="py-3 px-3">Department</th>
+                  <th class="py-3 px-3">Mobile &amp; PIN</th>
+                  <th class="py-3 px-3">Assigned Post</th>
+                  <th class="py-3 px-4 text-right">Actions</th>
+                </tr>
+              </thead>
+              <tbody id="staffDesktopBody" class="divide-y divide-stone-100 text-sm"></tbody>
+            </table>
+          </div>
+
+          <div id="emptyStaffState" class="hidden text-center py-10 text-stone-500 text-sm">
+            No employees found matching your search.
+          </div>
+        </div>
+      </section>
+
+      <!-- =================================================================== -->
+      <!-- ADMIN VIEW 5: SETTINGS, LOGO UPLOADER & INSTALL GUIDE               -->
+      <!-- =================================================================== -->
+      <section id="view-admin-settings" class="hidden space-y-4">
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-4">
+
+          <!-- LEFT COLUMN: Company Logo Uploader + Production Controls + Admin PIN -->
+          <div class="space-y-4">
+            <!-- Company Logo Manager Card -->
+            <div class="bg-white rounded-2xl shadow-sm border border-stone-200 p-4 sm:p-5 space-y-4">
+              <div class="flex items-center gap-2.5">
+                <div class="w-9 h-9 rounded-xl bg-obsidian-900 text-gold-500 flex items-center justify-center border border-gold-500/30">
+                  <i data-lucide="image" class="w-4 h-4"></i>
+                </div>
+                <div>
+                  <h2 class="text-base font-extrabold text-obsidian-900">Company Logo Manager</h2>
+                  <p class="text-xs text-stone-500">Uses <code class="font-mono">icon-512.png</code> &amp; <code class="font-mono">icon-192.png</code> directly across the app</p>
+                </div>
+              </div>
+
+              <div class="flex flex-col sm:flex-row items-center gap-4 p-4 rounded-2xl bg-obsidian-900 text-white border border-gold-500/30">
+                <div id="settingsCrestPreview" class="w-20 h-20 rounded-full shrink-0 flex items-center justify-center overflow-hidden bg-obsidian-950 ring-2 ring-gold-500/50"></div>
+                <div class="flex-1 text-center sm:text-left space-y-2.5 w-full">
+                  <div>
+                    <div id="logoSourceLabel" class="text-xs font-extrabold text-gold-400">Using icon-512.png / icon-192.png</div>
+                    <p class="text-[11px] text-stone-400">Displayed on Login Screen, Header, PWA Icon &amp; Digital Badges.</p>
+                  </div>
+                  <div class="flex flex-wrap justify-center sm:justify-start gap-2">
+                    <button type="button" onclick="triggerLogoFilePicker()"
+                      class="min-h-[44px] px-3.5 rounded-xl bg-gold-500 hover:bg-gold-600 text-obsidian-950 text-xs font-extrabold inline-flex items-center gap-1.5 transition active:scale-95">
+                      <i data-lucide="upload" class="w-4 h-4"></i>
+                      <span>Load icon-512.png</span>
+                    </button>
+                    <button type="button" onclick="resetCompanyLogo()"
+                      class="min-h-[44px] px-3 rounded-xl bg-white/10 hover:bg-white/15 text-stone-200 border border-white/15 text-xs font-bold transition">
+                      Reset to icon-512.png file
+                    </button>
+                  </div>
+                </div>
+              </div>
+
+              <div class="rounded-xl bg-gold-50 border border-gold-200 p-3 text-xs text-obsidian-900 leading-relaxed">
+                <strong>Hosting Note:</strong> When hosted on <strong>Netlify</strong>, <strong>GitHub Pages</strong>, or <strong>Vercel</strong> in the same folder as <code class="font-mono">icon-192.png</code> and <code class="font-mono">icon-512.png</code>, your exact PNG logos load automatically with zero setup. Use <em>Load icon-512.png</em> above to preview instantly inside a local sandbox.
+              </div>
+            </div>
+
+            <!-- Production Controls Card -->
+            <div class="bg-white rounded-2xl shadow-sm border border-stone-200 p-4 sm:p-5 space-y-4">
+              <div class="flex items-center gap-2.5">
+                <div class="w-9 h-9 rounded-xl bg-obsidian-900 text-gold-500 flex items-center justify-center border border-gold-500/30">
+                  <i data-lucide="sliders-horizontal" class="w-4 h-4"></i>
+                </div>
+                <div>
+                  <h2 class="text-base font-extrabold text-obsidian-900">Production Controls</h2>
+                  <p class="text-xs text-stone-500">Enforce strict field rules for employees</p>
+                </div>
+              </div>
+
+              <!-- Toggle 1: Hide Demo GPS Simulator for Employees -->
+              <div class="flex items-center justify-between gap-3 p-3.5 rounded-2xl bg-warmgray border border-stone-200">
+                <div>
+                  <div class="text-sm font-bold text-obsidian-900">Hide Demo GPS Simulator for Employees</div>
+                  <p class="text-xs text-stone-500 mt-0.5">Turn ON for live production so staff must use real phone GPS.</p>
+                </div>
+                <label class="relative inline-flex items-center cursor-pointer shrink-0">
+                  <input type="checkbox" id="settingHideSimulator" onchange="toggleSetting('hideDemoSimulator', this.checked)" class="sr-only peer" />
+                  <div class="w-12 h-7 bg-stone-300 rounded-full peer peer-checked:bg-[#16A34A] after:content-[''] after:absolute after:top-[3px] after:left-[3px] after:bg-white after:rounded-full after:h-[22px] after:w-[22px] after:transition-all peer-checked:after:translate-x-5 shadow-inner"></div>
+                </label>
+              </div>
+
+              <!-- Toggle 2: Require Live Selfie on Check-In -->
+              <div class="flex items-center justify-between gap-3 p-3.5 rounded-2xl bg-warmgray border border-stone-200">
+                <div>
+                  <div class="text-sm font-bold text-obsidian-900">Require Live Selfie on Check-In</div>
+                  <p class="text-xs text-stone-500 mt-0.5">Block CHECK IN until a live selfie or digital badge is captured.</p>
+                </div>
+                <label class="relative inline-flex items-center cursor-pointer shrink-0">
+                  <input type="checkbox" id="settingMandatorySelfie" onchange="toggleSetting('mandatorySelfie', this.checked)" class="sr-only peer" />
+                  <div class="w-12 h-7 bg-stone-300 rounded-full peer peer-checked:bg-[#16A34A] after:content-[''] after:absolute after:top-[3px] after:left-[3px] after:bg-white after:rounded-full after:h-[22px] after:w-[22px] after:transition-all peer-checked:after:translate-x-5 shadow-inner"></div>
+                </label>
+              </div>
+            </div>
+
+            <!-- Update Admin PIN Card -->
+            <div class="bg-white rounded-2xl shadow-sm border border-stone-200 p-4 sm:p-5 space-y-4">
+              <div class="flex items-center gap-2.5">
+                <div class="w-9 h-9 rounded-xl bg-obsidian-900 text-gold-500 flex items-center justify-center border border-gold-500/30">
+                  <i data-lucide="key-round" class="w-4 h-4"></i>
+                </div>
+                <div>
+                  <h2 class="text-base font-extrabold text-obsidian-900">Update 4-Digit Admin PIN</h2>
+                  <p class="text-xs text-stone-500">Default demo PIN is <strong class="font-mono">1234</strong>.</p>
+                </div>
+              </div>
+
+              <form onsubmit="handleChangeAdminPin(event)" class="space-y-3">
+                <div class="grid grid-cols-1 sm:grid-cols-3 gap-2.5">
+                  <div>
+                    <label class="block text-[11px] font-bold uppercase text-stone-500 mb-1">Current PIN</label>
+                    <input id="pinCurrent" type="password" inputmode="numeric" maxlength="4" placeholder="••••"
+                      class="w-full min-h-[48px] rounded-xl border border-stone-300 bg-warmgray px-3 text-center font-mono font-bold tracking-widest" />
+                  </div>
+                  <div>
+                    <label class="block text-[11px] font-bold uppercase text-stone-500 mb-1">New PIN</label>
+                    <input id="pinNew" type="password" inputmode="numeric" maxlength="4" placeholder="••••"
+                      class="w-full min-h-[48px] rounded-xl border border-stone-300 bg-warmgray px-3 text-center font-mono font-bold tracking-widest" />
+                  </div>
+                  <div>
+                    <label class="block text-[11px] font-bold uppercase text-stone-500 mb-1">Confirm PIN</label>
+                    <input id="pinConfirm" type="password" inputmode="numeric" maxlength="4" placeholder="••••"
+                      class="w-full min-h-[48px] rounded-xl border border-stone-300 bg-warmgray px-3 text-center font-mono font-bold tracking-widest" />
+                  </div>
+                </div>
+                <button type="submit"
+                  class="w-full sm:w-auto min-h-[48px] px-5 rounded-xl bg-obsidian-900 hover:bg-obsidian-800 text-gold-400 border border-gold-500/40 text-xs font-extrabold transition active:scale-95">
+                  Save New Admin PIN
+                </button>
+              </form>
+            </div>
+
+            <!-- Reset Demo Data -->
+            <div class="bg-white rounded-2xl shadow-sm border border-stone-200 p-4 flex items-center justify-between gap-3">
+              <div>
+                <div class="text-sm font-bold text-obsidian-900">Reset Demo Data</div>
+                <p class="text-xs text-stone-500">Restore default Bengaluru sites, staff, roster &amp; logs.</p>
+              </div>
+              <button type="button" onclick="confirmResetDemoData()"
+                class="min-h-[44px] px-4 rounded-xl bg-red-50 hover:bg-red-100 text-[#DC2626] border border-red-200 text-xs font-bold shrink-0">
+                Reset All
+              </button>
+            </div>
+          </div>
+
+          <!-- RIGHT COLUMN: Employee Phone Installation Guide -->
+          <div class="bg-white rounded-2xl shadow-sm border border-stone-200 p-4 sm:p-5 space-y-4 h-fit">
+            <div class="flex items-center gap-2.5">
+              <div class="w-9 h-9 rounded-xl bg-gold-500 text-obsidian-950 flex items-center justify-center">
+                <i data-lucide="smartphone" class="w-5 h-5"></i>
+              </div>
+              <div>
+                <h2 class="text-base font-extrabold text-obsidian-900">Employee Phone Installation Guide</h2>
+                <p class="text-xs text-stone-500">Deploy as a Home Screen app with your official crest icon</p>
+              </div>
+            </div>
+
+            <div class="rounded-2xl bg-obsidian-900 text-white border border-gold-500/30 p-4 space-y-2 text-xs">
+              <div class="font-extrabold text-gold-400 flex items-center gap-1.5">
+                <i data-lucide="folder-up" class="w-4 h-4"></i>
+                <span>Step 1 — Host 3 Files Together over HTTPS</span>
+              </div>
+              <p class="text-stone-300 leading-relaxed">
+                Place <code class="font-mono text-gold-400">geoattend.html</code> (renamed to <code class="font-mono text-gold-400">index.html</code>), <code class="font-mono text-gold-400">icon-192.png</code>, and <code class="font-mono text-gold-400">icon-512.png</code> inside one folder, then drag-and-drop that folder onto <strong>Netlify Drop</strong> (<span class="font-mono text-stone-200">app.netlify.com/drop</span>) or publish via <strong>GitHub Pages</strong>. HTTPS is required for phone GPS &amp; camera access.
+              </p>
+            </div>
+
+            <div class="rounded-2xl bg-green-50 border border-green-200 p-4 space-y-2">
+              <div class="flex items-center gap-2 font-extrabold text-green-950 text-sm">
+                <i data-lucide="smartphone" class="w-4 h-4 text-[#16A34A]"></i>
+                <span>Android Phones (Google Chrome)</span>
+              </div>
+              <ol class="list-decimal list-inside text-xs text-green-950 space-y-1.5 leading-relaxed">
+                <li>Send your HTTPS link to employees on WhatsApp and open in <strong>Chrome</strong>.</li>
+                <li>Tap the <strong>three-dot menu (⋮)</strong> at the top-right.</li>
+                <li>Tap <strong>Add to Home screen</strong> → <strong>Install</strong>.</li>
+                <li>Your <strong>Public Force</strong> crest icon appears on their Home Screen and opens full-screen.</li>
+              </ol>
+            </div>
+
+            <div class="rounded-2xl bg-gold-50 border border-gold-200 p-4 space-y-2">
+              <div class="flex items-center gap-2 font-extrabold text-obsidian-900 text-sm">
+                <i data-lucide="tablet-smartphone" class="w-4 h-4 text-gold-700"></i>
+                <span>iPhone / iPad (Safari)</span>
+              </div>
+              <ol class="list-decimal list-inside text-xs text-obsidian-900 space-y-1.5 leading-relaxed">
+                <li>Open your GeoAttend HTTPS link in <strong>Safari</strong>.</li>
+                <li>Tap the <strong>Share</strong> icon (square with upward arrow) at the bottom.</li>
+                <li>Scroll down and tap <strong>Add to Home Screen</strong> → <strong>Add</strong>.</li>
+                <li>Staff sign in once with their Employee ID (or Mobile) + 4-digit PIN.</li>
+              </ol>
+            </div>
+          </div>
+        </div>
+      </section>
+    </main>
+
+    <!-- FIXED BOTTOM NAVIGATION BAR (Mobile < 768px, 3 tabs Employee / 5 tabs Admin) -->
+    <nav id="mobileBottomNav" class="md:hidden fixed bottom-0 inset-x-0 z-40 bg-obsidian-900/95 backdrop-blur-md border-t border-gold-500/30 shadow-[0_-4px_24px_rgba(0,0,0,0.28)] safe-bottom" aria-label="Mobile Navigation"></nav>
+  </div>
+
+  <!-- ======================================================================= -->
+  <!-- 3. RESPONSIVE MODAL (Bottom Sheet on Mobile, Dialog on Desktop)         -->
+  <!-- ======================================================================= -->
+  <div id="modalBackdrop" class="hidden fixed inset-0 z-50 bg-obsidian-950/70 backdrop-blur-[2px] flex items-end sm:items-center justify-center sm:p-4" onclick="if(event.target===this) closeModal()">
+    <div class="modal-panel-anim bg-white w-full sm:max-w-lg rounded-t-3xl sm:rounded-2xl shadow-2xl border border-gold-500/30 overflow-hidden flex flex-col max-h-[90vh] safe-bottom">
+      <div class="sm:hidden flex justify-center pt-2.5 pb-1 bg-obsidian-900">
+        <div class="w-10 h-1.5 rounded-full bg-gold-500/50"></div>
+      </div>
+      <div class="flex items-center justify-between px-5 py-3.5 border-b border-gold-500/25 bg-obsidian-900 text-white">
+        <h3 id="modalTitle" class="text-base font-extrabold text-gold-400">Modal</h3>
+        <button type="button" onclick="closeModal()" class="w-10 h-10 rounded-xl flex items-center justify-center text-stone-300 hover:bg-white/10 transition">
+          <i data-lucide="x" class="w-5 h-5"></i>
+        </button>
+      </div>
+      <div id="modalBody" class="p-5 overflow-y-auto text-sm text-stone-700 flex-1 bg-white"></div>
+      <div id="modalFooter" class="px-5 py-3.5 bg-warmgray border-t border-stone-200 flex flex-col-reverse sm:flex-row sm:justify-end gap-2"></div>
+    </div>
+  </div>
+
+  <!-- ======================================================================= -->
+  <!-- 4. TOAST NOTIFICATION STACK                                             -->
+  <!-- ======================================================================= -->
+  <div id="toastContainer" class="fixed top-20 md:top-auto md:bottom-5 right-3 sm:right-5 z-50 flex flex-col gap-2 max-w-sm w-[calc(100%-1.5rem)] pointer-events-none"></div>
+
+  <!-- ======================================================================= -->
+  <!-- 5. APPLICATION JAVASCRIPT                                               -->
+  <!-- ======================================================================= -->
+  <script>
+    /* =========================================================================
+       STORAGE KEYS & SEED DATA
+       ========================================================================= */
+    const STORAGE_KEYS = {
+      SITES: 'pfss_geoattend_v6_sites',
+      EMPLOYEES: 'pfss_geoattend_v6_employees',
+      ASSIGNMENTS: 'pfss_geoattend_v6_assignments',
+      LOGS: 'pfss_geoattend_v6_logs',
+      SETTINGS: 'pfss_geoattend_v6_settings',
+      SESSION: 'pfss_geoattend_v6_session',
+      CUSTOM_LOGO: 'pfss_custom_logo',
+    };
+
+    const STANDARD_ROLES = [
+      'Security',
+      'Housekeeping',
+      'Facility Technician',
+      'Supervisor',
+      'Pantry Staff',
+      'Front Desk',
+    ];
+
+    const ROLE_STYLES = {
+      'Security': 'bg-obsidian-900 text-gold-400 border-gold-500/40',
+      'Housekeeping': 'bg-teal-50 text-teal-900 border-teal-300',
+      'Facility Technician': 'bg-gold-50 text-obsidian-900 border-gold-400',
+      'Supervisor': 'bg-purple-50 text-purple-900 border-purple-300',
+      'Pantry Staff': 'bg-rose-50 text-rose-900 border-rose-300',
+      'Front Desk': 'bg-sky-50 text-sky-900 border-sky-300',
+    };
+
+    const DEFAULT_SETTINGS = {
+      adminPin: '1234',
+      hideDemoSimulator: false, // false = Demo Simulator visible; true = Production Mode
+      mandatorySelfie: false,
+    };
+
+    const DEFAULT_EMPLOYEES = [
+      { id: 'PFSS-101', name: 'Lakshmi Devi', role: 'Housekeeping', phone: '9845022101', pin: '1111' },
+      { id: 'PFSS-102', name: 'Rajesh Kumar', role: 'Security', phone: '9845022102', pin: '2222' },
+      { id: 'PFSS-103', name: 'Manjunath Reddy', role: 'Facility Technician', phone: '9845022103', pin: '3333' },
+      { id: 'PFSS-104', name: 'Kavitha Rao', role: 'Supervisor', phone: '9845022104', pin: '4444' },
+      { id: 'PFSS-105', name: 'Sunitha Gowda', role: 'Housekeeping', phone: '9845022105', pin: '5555' },
+      { id: 'PFSS-106', name: 'Ramesh Naik', role: 'Pantry Staff', phone: '9845022106', pin: '6666' },
+      { id: 'PFSS-107', name: 'Priya Menon', role: 'Front Desk', phone: '9845022107', pin: '7777' },
+      { id: 'PFSS-108', name: 'Suresh Nair', role: 'Security', phone: '9845022108', pin: '8888' },
+    ];
+
+    const DEFAULT_SITES = [
+      {
+        id: 'SITE-01',
+        name: 'Orion Tech Park',
+        address: 'Dr. Rajkumar Rd, Rajajinagar, Bengaluru',
+        lat: 13.0110,
+        lng: 77.5549,
+        radius: 150,
+        shifts: [
+          { id: 'SH-101', name: 'Morning', start: '06:00', end: '14:00', graceMins: 15 },
+          { id: 'SH-102', name: 'Afternoon', start: '14:00', end: '22:00', graceMins: 15 },
+          { id: 'SH-103', name: 'Night', start: '22:00', end: '06:00', graceMins: 15 },
+        ],
+      },
+      {
+        id: 'SITE-02',
+        name: 'Prestige Tech Hub',
+        address: 'Outer Ring Rd, Kadubeesanahalli, Bengaluru',
+        lat: 12.9352,
+        lng: 77.6914,
+        radius: 200,
+        shifts: [
+          { id: 'SH-201', name: 'Morning', start: '07:00', end: '15:00', graceMins: 10 },
+          { id: 'SH-202', name: 'Afternoon', start: '15:00', end: '23:00', graceMins: 10 },
+          { id: 'SH-203', name: 'Night', start: '23:00', end: '07:00', graceMins: 15 },
+        ],
+      },
+      {
+        id: 'SITE-03',
+        name: 'Embassy GolfLinks',
+        address: 'Intermediate Ring Rd, Domlur, Bengaluru',
+        lat: 12.9508,
+        lng: 77.6416,
+        radius: 180,
+        shifts: [
+          { id: 'SH-301', name: 'Morning', start: '07:30', end: '15:30', graceMins: 15 },
+          { id: 'SH-302', name: 'Afternoon', start: '15:30', end: '23:30', graceMins: 15 },
+          { id: 'SH-303', name: 'Night', start: '23:30', end: '07:30', graceMins: 15 },
+        ],
+      },
+      {
+        id: 'SITE-04',
+        name: 'Mantri Square',
+        address: 'Sampige Rd, Malleshwaram, Bengaluru',
+        lat: 12.9915,
+        lng: 77.5712,
+        radius: 160,
+        shifts: [
+          { id: 'SH-401', name: 'Morning', start: '08:00', end: '16:00', graceMins: 15 },
+          { id: 'SH-402', name: 'Afternoon', start: '14:00', end: '22:00', graceMins: 10 },
+          { id: 'SH-403', name: 'Night', start: '22:00', end: '08:00', graceMins: 15 },
+        ],
+      },
+    ];
+
+    function getTodayISO() {
+      const d = new Date();
+      return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+    }
+
+    function getYesterdayISO() {
+      const d = new Date(Date.now() - 86400000);
+      return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+    }
+
+    function buildDefaultAssignments() {
+      const today = getTodayISO();
+      return [
+        { id: 'ASG-1', employeeId: 'PFSS-101', siteId: 'SITE-01', shiftId: 'SH-101', recurring: true, date: today, dutyNotes: 'Lobby & Restrooms - Tower A' },
+        { id: 'ASG-2', employeeId: 'PFSS-102', siteId: 'SITE-01', shiftId: 'SH-103', recurring: true, date: today, dutyNotes: 'Main Gate & Boom Barrier' },
+        { id: 'ASG-3', employeeId: 'PFSS-103', siteId: 'SITE-02', shiftId: 'SH-202', recurring: true, date: today, dutyNotes: 'HVAC Chiller & DG Room' },
+        { id: 'ASG-4', employeeId: 'PFSS-104', siteId: 'SITE-03', shiftId: 'SH-301', recurring: true, date: today, dutyNotes: 'Site Operations & Rounds' },
+        { id: 'ASG-5', employeeId: 'PFSS-105', siteId: 'SITE-02', shiftId: 'SH-201', recurring: true, date: today, dutyNotes: 'Cafeteria & 2nd Floor Wing' },
+        { id: 'ASG-6', employeeId: 'PFSS-106', siteId: 'SITE-03', shiftId: 'SH-301', recurring: true, date: today, dutyNotes: 'Executive Pantry - Block C' },
+        { id: 'ASG-7', employeeId: 'PFSS-107', siteId: 'SITE-04', shiftId: 'SH-401', recurring: true, date: today, dutyNotes: 'Main Reception & Visitor Pass' },
+        { id: 'ASG-8', employeeId: 'PFSS-108', siteId: 'SITE-04', shiftId: 'SH-403', recurring: false, date: today, dutyNotes: 'Basement Parking Patrol' },
+      ];
+    }
+
+    function buildDefaultLogs() {
+      const now = Date.now();
+      const H = 3600000, M = 60000;
+      const today = getTodayISO();
+      const yest = getYesterdayISO();
+      return [
+        {
+          id: 'LOG-' + (now - 10),
+          employeeId: 'PFSS-102',
+          employeeName: 'Rajesh Kumar',
+          role: 'Security',
+          siteId: 'SITE-01',
+          siteName: 'Orion Tech Park',
+          shiftId: 'SH-103',
+          shiftLabel: 'Night (22:00 - 06:00)',
+          dateStr: today,
+          checkInTime: now - (1 * H + 15 * M),
+          checkOutTime: null,
+          distanceMeters: 18,
+          allowedRadius: 150,
+          gpsLat: 13.01112,
+          gpsLng: 77.55501,
+          gpsSource: 'Real Device GPS',
+          verified: true,
+          punctuality: 'On-Time',
+          lateMins: 0,
+          dutyType: 'Scheduled',
+          dutyNotes: 'Main Gate & Boom Barrier',
+          override: false,
+          overrideNote: '',
+          photoStamp: 'Digital Badge #PFSS-102',
+          photoDataUrl: null,
+        },
+        {
+          id: 'LOG-' + (now - 20),
+          employeeId: 'PFSS-103',
+          employeeName: 'Manjunath Reddy',
+          role: 'Facility Technician',
+          siteId: 'SITE-02',
+          siteName: 'Prestige Tech Hub',
+          shiftId: 'SH-202',
+          shiftLabel: 'Afternoon (15:00 - 23:00)',
+          dateStr: today,
+          checkInTime: now - (2 * H + 30 * M),
+          checkOutTime: null,
+          distanceMeters: 265,
+          allowedRadius: 200,
+          gpsLat: 12.93712,
+          gpsLng: 77.69285,
+          gpsSource: 'Real Device GPS',
+          verified: false,
+          punctuality: 'Late',
+          lateMins: 24,
+          dutyType: 'Scheduled',
+          dutyNotes: 'HVAC Chiller & DG Room',
+          override: true,
+          overrideNote: 'Sup. Kavitha — Spare parts pickup at Annex Gate',
+          photoStamp: 'Digital Badge #PFSS-103',
+          photoDataUrl: null,
+        },
+        {
+          id: 'LOG-' + (now - 30),
+          employeeId: 'PFSS-106',
+          employeeName: 'Ramesh Naik',
+          role: 'Pantry Staff',
+          siteId: 'SITE-03',
+          siteName: 'Embassy GolfLinks',
+          shiftId: 'SH-301',
+          shiftLabel: 'Morning (07:30 - 15:30)',
+          dateStr: today,
+          checkInTime: now - (6 * H + 10 * M),
+          checkOutTime: now - (10 * M),
+          distanceMeters: 31,
+          allowedRadius: 180,
+          gpsLat: 12.95098,
+          gpsLng: 77.64178,
+          gpsSource: 'Real Device GPS',
+          verified: true,
+          punctuality: 'On-Time',
+          lateMins: 0,
+          dutyType: 'Scheduled',
+          dutyNotes: 'Executive Pantry - Block C',
+          override: false,
+          overrideNote: '',
+          photoStamp: 'Digital Badge #PFSS-106',
+          photoDataUrl: null,
+        },
+        {
+          id: 'LOG-' + (now - 40),
+          employeeId: 'PFSS-101',
+          employeeName: 'Lakshmi Devi',
+          role: 'Housekeeping',
+          siteId: 'SITE-01',
+          siteName: 'Orion Tech Park',
+          shiftId: 'SH-101',
+          shiftLabel: 'Morning (06:00 - 14:00)',
+          dateStr: yest,
+          checkInTime: now - (26 * H),
+          checkOutTime: now - (18 * H),
+          distanceMeters: 22,
+          allowedRadius: 150,
+          gpsLat: 13.01115,
+          gpsLng: 77.55502,
+          gpsSource: 'Real Device GPS',
+          verified: true,
+          punctuality: 'On-Time',
+          lateMins: 0,
+          dutyType: 'Scheduled',
+          dutyNotes: 'Lobby & Restrooms - Tower A',
+          override: false,
+          overrideNote: '',
+          photoStamp: 'Digital Badge #PFSS-101',
+          photoDataUrl: null,
+        },
+        {
+          id: 'LOG-' + (now - 50),
+          employeeId: 'PFSS-107',
+          employeeName: 'Priya Menon',
+          role: 'Front Desk',
+          siteId: 'SITE-04',
+          siteName: 'Mantri Square',
+          shiftId: 'SH-401',
+          shiftLabel: 'Morning (08:00 - 16:00)',
+          dateStr: today,
+          checkInTime: now - (4 * H + 40 * M),
+          checkOutTime: null,
+          distanceMeters: 14,
+          allowedRadius: 160,
+          gpsLat: 12.99160,
+          gpsLng: 77.57128,
+          gpsSource: 'Real Device GPS',
+          verified: true,
+          punctuality: 'Late',
+          lateMins: 19,
+          dutyType: 'Scheduled',
+          dutyNotes: 'Main Reception & Visitor Pass',
+          override: false,
+          overrideNote: '',
+          photoStamp: 'Digital Badge #PFSS-107',
+          photoDataUrl: null,
+        },
+      ];
+    }
+
+    /* =========================================================================
+       COMPANY LOGO LOADER, WEB APP MANIFEST & SMART FALLBACK
+       ========================================================================= */
+    function initWebAppManifest() {
+      try {
+        const resolveAsset = (file) => {
+          if (window.location && window.location.protocol && window.location.protocol.startsWith('http')) {
+            return new URL(file, window.location.href).href;
+          }
+          return file;
+        };
+        const manifest = {
+          name: 'Public Force Security Services — GeoAttend',
+          short_name: 'PFSS GeoAttend',
+          description: 'Workforce GPS Geofence Attendance & Shift Roster App',
+          start_url: '.',
+          display: 'standalone',
+          background_color: '#141518',
+          theme_color: '#141518',
+          icons: [
+            { src: resolveAsset('icon-192.png'), sizes: '192x192', type: 'image/png', purpose: 'any maskable' },
+            { src: resolveAsset('icon-512.png'), sizes: '512x512', type: 'image/png', purpose: 'any maskable' }
+          ]
+        };
+        const blob = new Blob([JSON.stringify(manifest)], { type: 'application/manifest+json' });
+        const url = URL.createObjectURL(blob);
+        const link = document.getElementById('pwaManifestLink');
+        if (link) link.setAttribute('href', url);
+      } catch (err) {
+        console.warn('Manifest generation skipped:', err);
+      }
+    }
+
+    function buildCompactFallbackBadge(isSmall = false) {
+      if (isSmall) {
+        return `
+          <div class="w-full h-full rounded-full bg-obsidian-950 border border-gold-500/80 flex flex-col items-center justify-center select-none">
+            <span class="text-[10px] font-black tracking-tighter text-gold-400 leading-none">PFSS</span>
+          </div>
+        `;
+      }
+      return `
+        <div class="w-full h-full rounded-full bg-gradient-to-b from-obsidian-800 to-obsidian-950 border-2 border-gold-500/80 flex flex-col items-center justify-center p-2 text-center select-none">
+          <i data-lucide="shield" class="w-7 h-7 text-gold-500 mb-0.5"></i>
+          <span class="text-xs font-black tracking-wider text-gold-400 leading-tight">PFSS</span>
+          <span class="text-[8px] font-bold uppercase tracking-widest text-stone-400">Security</span>
+        </div>
+      `;
+    }
+
+    function handleLogoImgError(mountId, isSmall) {
+      const mount = document.getElementById(mountId);
+      if (mount) mount.innerHTML = buildCompactFallbackBadge(isSmall);
+      if (mountId === 'loginCrestMount') {
+        const btn = document.getElementById('loginLogoLoaderBtn');
+        if (btn) btn.classList.remove('hidden');
+      }
+      const lbl = document.getElementById('logoSourceLabel');
+      if (lbl && !state.customLogoDataUrl) {
+        lbl.textContent = 'Sandbox Preview Fallback (Tap Load icon-512.png)';
+      }
+      refreshIcons();
+    }
+
+    function renderBrandEmblems() {
+      const customLogo = state.customLogoDataUrl;
+      const loginBtn = document.getElementById('loginLogoLoaderBtn');
+      if (loginBtn) loginBtn.classList.add('hidden');
+
+      const loginMount = document.getElementById('loginCrestMount');
+      if (loginMount) {
+        const heroSrc = customLogo || 'icon-512.png';
+        loginMount.innerHTML = `<img src="${heroSrc}" alt="Public Force Security Services" class="w-full h-full object-cover rounded-full" onerror="handleLogoImgError('loginCrestMount', false)" />`;
+      }
+
+      const headerMount = document.getElementById('headerCrestMount');
+      if (headerMount) {
+        const hdrSrc = customLogo || 'icon-192.png';
+        headerMount.innerHTML = `<img src="${hdrSrc}" alt="PFSS" class="w-full h-full object-cover rounded-full" onerror="handleLogoImgError('headerCrestMount', true)" />`;
+      }
+
+      const settingsMount = document.getElementById('settingsCrestPreview');
+      if (settingsMount) {
+        const setSrc = customLogo || 'icon-512.png';
+        settingsMount.innerHTML = `<img src="${setSrc}" alt="Public Force Security Services" class="w-full h-full object-cover rounded-full" onerror="handleLogoImgError('settingsCrestPreview', false)" />`;
+      }
+
+      const lbl = document.getElementById('logoSourceLabel');
+      if (lbl) {
+        lbl.textContent = customLogo
+          ? 'Custom Uploaded Logo Active (Saved in Browser)'
+          : 'Direct File Mode (icon-512.png & icon-192.png)';
+      }
+    }
+
+    function triggerLogoFilePicker() {
+      const input = document.getElementById('globalLogoFileInput');
+      if (input) input.click();
+    }
+
+    function handleLogoUpload(event) {
+      const file = event.target.files && event.target.files[0];
+      if (!file) return;
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        const img = new Image();
+        img.onload = () => {
+          const canvas = document.createElement('canvas');
+          canvas.width = 512;
+          canvas.height = 512;
+          const ctx = canvas.getContext('2d');
+          ctx.clearRect(0, 0, 512, 512);
+          const scale = Math.min(512 / img.width, 512 / img.height);
+          const w = img.width * scale, h = img.height * scale;
+          ctx.drawImage(img, (512 - w) / 2, (512 - h) / 2, w, h);
+          state.customLogoDataUrl = canvas.toDataURL('image/png');
+          try {
+            localStorage.setItem(STORAGE_KEYS.CUSTOM_LOGO, state.customLogoDataUrl);
+          } catch (err) {
+            showToast('Logo too large for local storage.', 'warning');
+          }
+          renderBrandEmblems();
+          showToast('Exact company logo loaded across Login, Header & Digital Badges!', 'success');
+        };
+        img.src = e.target.result;
+      };
+      reader.readAsDataURL(file);
+      event.target.value = '';
+    }
+
+    function resetCompanyLogo() {
+      state.customLogoDataUrl = null;
+      localStorage.removeItem(STORAGE_KEYS.CUSTOM_LOGO);
+      renderBrandEmblems();
+      showToast('Reset to direct icon-512.png / icon-192.png files.', 'info');
+    }
+
+    /* =========================================================================
+       APPLICATION STATE & PERSISTENCE
+       ========================================================================= */
+    const state = {
+      sites: [],
+      employees: [],
+      assignments: [],
+      logs: [],
+      settings: { ...DEFAULT_SETTINGS },
+      session: null,
+      customLogoDataUrl: null,
+      activeTab: '',
+      reliefMode: false,
+      selectedSiteId: 'SITE-01',
+      selectedShiftId: 'SH-101',
+      gpsSource: 'GPS Simulator',
+      simDrawerOpen: false,
+      simDistance: 20,
+      simBearing: 40,
+      employeeLat: 13.0111,
+      employeeLng: 77.5550,
+      computedDistance: 20,
+      cameraStream: null,
+      capturedPhotoDataUrl: null,
+      capturedPhotoLabel: '',
+      adminRoleFilter: 'ALL',
+      rosterRoleFilter: 'ALL',
+      staffRoleFilter: 'ALL',
+    };
+
+    function loadPersistedData() {
+      try {
+        state.sites = JSON.parse(localStorage.getItem(STORAGE_KEYS.SITES)) || JSON.parse(JSON.stringify(DEFAULT_SITES));
+        state.employees = JSON.parse(localStorage.getItem(STORAGE_KEYS.EMPLOYEES)) || JSON.parse(JSON.stringify(DEFAULT_EMPLOYEES));
+        state.assignments = JSON.parse(localStorage.getItem(STORAGE_KEYS.ASSIGNMENTS)) || buildDefaultAssignments();
+        state.logs = JSON.parse(localStorage.getItem(STORAGE_KEYS.LOGS)) || buildDefaultLogs();
+        const savedSettings = JSON.parse(localStorage.getItem(STORAGE_KEYS.SETTINGS));
+        state.settings = savedSettings ? { ...DEFAULT_SETTINGS, ...savedSettings } : { ...DEFAULT_SETTINGS };
+        state.session = JSON.parse(localStorage.getItem(STORAGE_KEYS.SESSION)) || null;
+        state.customLogoDataUrl = localStorage.getItem(STORAGE_KEYS.CUSTOM_LOGO) || null;
+      } catch (err) {
+        state.sites = JSON.parse(JSON.stringify(DEFAULT_SITES));
+        state.employees = JSON.parse(JSON.stringify(DEFAULT_EMPLOYEES));
+        state.assignments = buildDefaultAssignments();
+        state.logs = buildDefaultLogs();
+        state.settings = { ...DEFAULT_SETTINGS };
+        state.session = null;
+        state.customLogoDataUrl = null;
+      }
+      if (!state.sites.length) state.sites = JSON.parse(JSON.stringify(DEFAULT_SITES));
+      if (!state.employees.length) state.employees = JSON.parse(JSON.stringify(DEFAULT_EMPLOYEES));
+      if (state.session && state.session.role === 'employee' && !getEmployeeById(state.session.employeeId)) {
+        state.session = null;
+      }
+    }
+
+    function saveData() {
+      try {
+        localStorage.setItem(STORAGE_KEYS.SITES, JSON.stringify(state.sites));
+        localStorage.setItem(STORAGE_KEYS.EMPLOYEES, JSON.stringify(state.employees));
+        localStorage.setItem(STORAGE_KEYS.ASSIGNMENTS, JSON.stringify(state.assignments));
+        localStorage.setItem(STORAGE_KEYS.LOGS, JSON.stringify(state.logs));
+        localStorage.setItem(STORAGE_KEYS.SETTINGS, JSON.stringify(state.settings));
+        if (state.session) localStorage.setItem(STORAGE_KEYS.SESSION, JSON.stringify(state.session));
+        else localStorage.removeItem(STORAGE_KEYS.SESSION);
+      } catch (err) {
+        console.error('Persistence error:', err);
+      }
+    }
+
+    /* =========================================================================
+       GEO MATH, PUNCTUALITY & HELPERS
+       ========================================================================= */
+    const EARTH_R = 6371000;
+
+    function haversineDistance(lat1, lon1, lat2, lon2) {
+      const r = (d) => (d * Math.PI) / 180;
+      const dLat = r(lat2 - lat1), dLon = r(lon2 - lon1);
+      const a = Math.sin(dLat / 2) ** 2 + Math.cos(r(lat1)) * Math.cos(r(lat2)) * Math.sin(dLon / 2) ** 2;
+      return Math.round(EARTH_R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a)));
+    }
+
+    function offsetCoordinates(lat, lng, distM, bearingDeg) {
+      const r = (d) => (d * Math.PI) / 180;
+      const deg = (rad) => (rad * 180) / Math.PI;
+      const ang = distM / EARTH_R;
+      const b = r(bearingDeg), lat1 = r(lat), lon1 = r(lng);
+      const lat2 = Math.asin(Math.sin(lat1) * Math.cos(ang) + Math.cos(lat1) * Math.sin(ang) * Math.cos(b));
+      const lon2 = lon1 + Math.atan2(Math.sin(b) * Math.sin(ang) * Math.cos(lat1), Math.cos(ang) - Math.sin(lat1) * Math.sin(lat2));
+      return { lat: deg(lat2), lng: deg(lon2) };
+    }
+
+    function calculateBearing(lat1, lon1, lat2, lon2) {
+      const r = (d) => (d * Math.PI) / 180;
+      const deg = (rad) => (rad * 180) / Math.PI;
+      const y = Math.sin(r(lon2 - lon1)) * Math.cos(r(lat2));
+      const x = Math.cos(r(lat1)) * Math.sin(r(lat2)) - Math.sin(r(lat1)) * Math.cos(r(lat2)) * Math.cos(r(lon2 - lon1));
+      return (deg(Math.atan2(y, x)) + 360) % 360;
+    }
+
+    function evaluatePunctuality(shift) {
+      if (!shift || !shift.start) return { status: 'On-Time', lateMins: 0 };
+      const now = new Date();
+      const nowMins = now.getHours() * 60 + now.getMinutes();
+      const [sh, sm] = shift.start.split(':').map(Number);
+      const startMins = sh * 60 + sm;
+      const grace = Number(shift.graceMins || 0);
+      let diff = nowMins - startMins;
+      if (diff < -720) diff += 1440;
+      if (diff > 720) diff -= 1440;
+      return diff > grace ? { status: 'Late', lateMins: diff } : { status: 'On-Time', lateMins: 0 };
+    }
+
+    function getAllRoles() {
+      const set = new Set(STANDARD_ROLES);
+      state.employees.forEach((e) => { if (e.role) set.add(e.role); });
+      return Array.from(set);
+    }
+
+    function getRoleBadgeHtml(role) {
+      const cls = ROLE_STYLES[role] || 'bg-stone-100 text-stone-800 border-stone-300';
+      return `<span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-[11px] font-bold border ${cls}">${escapeHtml(role || 'Staff')}</span>`;
+    }
+
+    function getEmployeeById(id) { return state.employees.find((e) => e.id === id) || null; }
+    function getSiteById(id) { return state.sites.find((s) => s.id === id) || null; }
+    function getShiftById(siteId, shiftId) {
+      const site = getSiteById(siteId);
+      return site ? (site.shifts.find((sh) => sh.id === shiftId) || null) : null;
+    }
+    function getSelectedSite() { return getSiteById(state.selectedSiteId) || state.sites[0]; }
+    function getSelectedShift() {
+      const site = getSelectedSite();
+      return site && site.shifts.length ? (site.shifts.find((sh) => sh.id === state.selectedShiftId) || site.shifts[0]) : null;
+    }
+    function getActiveShiftForEmployee(empId) {
+      return state.logs.find((l) => l.employeeId === empId && !l.checkOutTime) || null;
+    }
+    function getActiveAssignmentsForEmployee(empId) {
+      const today = getTodayISO();
+      return state.assignments.filter((a) => a.employeeId === empId && getSiteById(a.siteId) && getShiftById(a.siteId, a.shiftId) && (a.recurring || a.date === today));
+    }
+    function getMatchingAssignment(empId, siteId, shiftId) {
+      return getActiveAssignmentsForEmployee(empId).find((a) => a.siteId === siteId && a.shiftId === shiftId) || null;
+    }
+    function refreshIcons() {
+      if (window.lucide && typeof window.lucide.createIcons === 'function') window.lucide.createIcons();
+    }
+
+    /* =========================================================================
+       LOGIN & AUTHENTICATION
+       ========================================================================= */
+    function showLoginScreen() {
+      stopCameraStream();
+      document.getElementById('appShell').classList.add('hidden');
+      document.getElementById('loginScreen').classList.remove('hidden');
+      document.getElementById('empLoginIdentifier').value = '';
+      document.getElementById('empLoginPin').value = '';
+      document.getElementById('adminLoginPin').value = '';
+      renderBrandEmblems();
+      renderQuickDemoButtons();
+      switchLoginTab('employee');
+      refreshIcons();
+    }
+
+    function switchLoginTab(mode) {
+      const isEmp = mode === 'employee';
+      document.getElementById('employeeLoginForm').classList.toggle('hidden', !isEmp);
+      document.getElementById('adminLoginForm').classList.toggle('hidden', isEmp);
+
+      const empBtn = document.getElementById('loginTabEmp');
+      const admBtn = document.getElementById('loginTabAdmin');
+      empBtn.className = `min-h-[48px] rounded-2xl text-xs sm:text-sm font-extrabold flex items-center justify-center gap-1.5 transition ${isEmp ? 'bg-obsidian-900 text-gold-400 shadow-sm' : 'text-stone-600 hover:text-obsidian-900'}`;
+      admBtn.className = `min-h-[48px] rounded-2xl text-xs sm:text-sm font-extrabold flex items-center justify-center gap-1.5 transition ${!isEmp ? 'bg-obsidian-900 text-gold-400 shadow-sm' : 'text-stone-600 hover:text-obsidian-900'}`;
+      refreshIcons();
+    }
+
+    function toggleQuickDemoDrawer() {
+      const drawer = document.getElementById('quickDemoDrawer');
+      const chev = document.getElementById('quickDemoChevron');
+      const hidden = drawer.classList.toggle('hidden');
+      chev.style.transform = hidden ? 'rotate(0deg)' : 'rotate(180deg)';
+    }
+
+    function renderQuickDemoButtons() {
+      // 5 Multi-department sample employees: Housekeeping, Security, Facility Technician, Pantry Staff, Front Desk
+      const demoIds = ['PFSS-101', 'PFSS-102', 'PFSS-103', 'PFSS-106', 'PFSS-107'];
+      const demoStaff = demoIds.map((id) => getEmployeeById(id)).filter(Boolean);
+      const list = demoStaff.length ? demoStaff : state.employees.slice(0, 5);
+      document.getElementById('quickDemoButtons').innerHTML = list.map((e) => `
+        <button type="button" onclick="quickDemoLogin('${e.id}')"
+          class="w-full min-h-[50px] px-3.5 py-2 rounded-xl border border-stone-200 hover:border-gold-500 bg-warmgray hover:bg-gold-50 flex items-center justify-between gap-2 text-left transition active:scale-[0.99]">
+          <div class="min-w-0">
+            <div class="text-xs font-extrabold text-obsidian-900 truncate">${escapeHtml(e.name)}</div>
+            <div class="text-[11px] font-mono text-stone-500">${escapeHtml(e.id)} • PIN: ${escapeHtml(e.pin)}</div>
+          </div>
+          ${getRoleBadgeHtml(e.role)}
+        </button>
+      `).join('');
+    }
+
+    function quickDemoLogin(empId) {
+      const emp = getEmployeeById(empId);
+      if (!emp) return;
+      state.session = { role: 'employee', employeeId: emp.id };
+      saveData();
+      enterAuthenticatedApp();
+      showToast(`Signed in as ${emp.name} (${emp.role})`, 'success');
+    }
+
+    function handleEmployeeLogin(e) {
+      e.preventDefault();
+      const rawId = document.getElementById('empLoginIdentifier').value.trim();
+      const pin = document.getElementById('empLoginPin').value.trim();
+      if (!rawId || !pin) {
+        showToast('Enter Employee ID (or Mobile) and 4-digit PIN.', 'error');
+        return;
+      }
+      const cleanDigits = rawId.replace(/\D/g, '');
+      const emp = state.employees.find((x) => {
+        const idMatch = x.id.toLowerCase() === rawId.toLowerCase();
+        const phoneDigits = String(x.phone || '').replace(/\D/g, '');
+        const phoneMatch = cleanDigits.length >= 8 && phoneDigits.endsWith(cleanDigits.slice(-10));
+        return idMatch || phoneMatch;
+      });
+      if (!emp || emp.pin !== pin) {
+        showToast('Invalid Employee ID / Mobile or PIN. Try Quick Demo Login below.', 'error');
+        return;
+      }
+      state.session = { role: 'employee', employeeId: emp.id };
+      saveData();
+      enterAuthenticatedApp();
+      showToast(`Welcome, ${emp.name}!`, 'success');
+    }
+
+    function handleAdminLogin(e) {
+      e.preventDefault();
+      const pin = document.getElementById('adminLoginPin').value.trim();
+      if (pin !== state.settings.adminPin) {
+        showToast('Incorrect Admin PIN. (Demo default: 1234)', 'error');
+        document.getElementById('adminLoginPin').value = '';
+        return;
+      }
+      state.session = { role: 'admin', employeeId: null };
+      saveData();
+      enterAuthenticatedApp();
+      showToast('Admin / Supervisor Console unlocked.', 'success');
+    }
+
+    function handleLogout() {
+      state.session = null;
+      saveData();
+      showLoginScreen();
+      showToast('Logged out successfully.', 'info');
+    }
+
+    /* =========================================================================
+       NAVIGATION SHELL (3 Tabs Employee vs 5 Tabs Admin)
+       ========================================================================= */
+    const EMPLOYEE_TABS = [
+      { id: 'emp-checkin', label: 'Check-In', icon: 'scan-face' },
+      { id: 'emp-shifts', label: 'My Shifts', icon: 'calendar-clock' },
+      { id: 'emp-history', label: 'My History', icon: 'history' },
+    ];
+
+    const ADMIN_TABS = [
+      { id: 'admin-dashboard', label: 'Dashboard', icon: 'layout-dashboard', badge: true },
+      { id: 'admin-roster', label: 'Roster', icon: 'calendar-clock' },
+      { id: 'admin-sites', label: 'Sites', icon: 'building-2' },
+      { id: 'admin-staff', label: 'Staff', icon: 'users' },
+      { id: 'admin-settings', label: 'Settings', icon: 'settings' },
+    ];
+
+    function enterAuthenticatedApp() {
+      document.getElementById('loginScreen').classList.add('hidden');
+      document.getElementById('appShell').classList.remove('hidden');
+      renderBrandEmblems();
+
+      const isAdmin = state.session.role === 'admin';
+      const ctxEl = document.getElementById('headerRoleContext');
+      if (isAdmin) {
+        ctxEl.textContent = 'Admin Console';
+      } else {
+        const emp = getEmployeeById(state.session.employeeId);
+        ctxEl.textContent = `${emp.name} (${emp.role})`;
+        syncEmployeeDefaultShift(emp.id);
+      }
+
+      buildNavigationBars(isAdmin ? ADMIN_TABS : EMPLOYEE_TABS);
+      switchTab(isAdmin ? 'admin-dashboard' : 'emp-checkin');
+    }
+
+    function buildNavigationBars(tabs) {
+      document.getElementById('desktopNav').innerHTML = tabs.map((t) => `
+        <button type="button" onclick="switchTab('${t.id}')" id="dtab-${t.id}"
+          class="min-h-[40px] px-3.5 rounded-lg text-xs lg:text-sm font-semibold flex items-center gap-1.5 transition">
+          <i data-lucide="${t.icon}" class="w-4 h-4"></i>
+          <span>${t.label}</span>
+          ${t.badge ? '<span id="desktopOnDutyBadge" class="px-1.5 py-0.5 text-[10px] font-black rounded-full bg-[#16A34A] text-white">0</span>' : ''}
+        </button>
+      `).join('');
+
+      const cols = tabs.length === 3 ? 'grid-cols-3' : 'grid-cols-5';
+      document.getElementById('mobileBottomNav').innerHTML = `
+        <div class="grid ${cols} h-16">
+          ${tabs.map((t) => `
+            <button type="button" onclick="switchTab('${t.id}')" id="mtab-${t.id}"
+              class="relative min-h-[48px] flex flex-col items-center justify-center gap-0.5 text-[11px] font-bold transition">
+              ${t.badge ? '<span id="mobileOnDutyBadge" class="absolute top-1.5 right-3 min-w-[18px] h-[18px] px-1 rounded-full bg-[#16A34A] text-white text-[10px] font-black flex items-center justify-center">0</span>' : ''}
+              <i data-lucide="${t.icon}" class="w-5 h-5"></i>
+              <span>${t.label}</span>
+            </button>
+          `).join('')}
+        </div>
+      `;
+      updateOnDutyBadges();
+    }
+
+    function switchTab(tabId) {
+      state.activeTab = tabId;
+      const allViews = [
+        'emp-checkin', 'emp-shifts', 'emp-history',
+        'admin-dashboard', 'admin-roster', 'admin-sites', 'admin-staff', 'admin-settings'
+      ];
+      allViews.forEach((v) => {
+        const el = document.getElementById(`view-${v}`);
+        if (el) el.classList.toggle('hidden', v !== tabId);
+
+        const dBtn = document.getElementById(`dtab-${v}`);
+        if (dBtn) {
+          dBtn.className = v === tabId
+            ? 'min-h-[40px] px-3.5 rounded-lg text-xs lg:text-sm font-extrabold flex items-center gap-1.5 transition bg-gold-500 text-obsidian-950 shadow-sm'
+            : 'min-h-[40px] px-3.5 rounded-lg text-xs lg:text-sm font-semibold flex items-center gap-1.5 transition text-stone-300 hover:text-gold-400 hover:bg-white/5';
+        }
+
+        const mBtn = document.getElementById(`mtab-${v}`);
+        if (mBtn) {
+          mBtn.className = v === tabId
+            ? 'relative min-h-[48px] flex flex-col items-center justify-center gap-0.5 text-[11px] font-extrabold text-gold-400 bg-obsidian-800 border-t-2 border-gold-500 transition'
+            : 'relative min-h-[48px] flex flex-col items-center justify-center gap-0.5 text-[11px] font-semibold text-stone-400 hover:text-stone-200 border-t-2 border-transparent transition';
+        }
+      });
+
+      if (tabId !== 'emp-checkin') stopCameraStream();
+      if (tabId === 'emp-checkin') renderEmployeeCheckInView();
+      if (tabId === 'emp-shifts') renderEmployeeShiftsView();
+      if (tabId === 'emp-history') renderEmployeeHistoryView();
+      if (tabId === 'admin-dashboard') { populateAdminFilters(); renderAdminDashboard(); }
+      if (tabId === 'admin-roster') renderRosterView();
+      if (tabId === 'admin-sites') renderSitesView();
+      if (tabId === 'admin-staff') renderStaffDirectory();
+      if (tabId === 'admin-settings') renderSettingsView();
+
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+      refreshIcons();
+    }
+
+    function updateOnDutyBadges() {
+      const count = state.logs.filter((l) => !l.checkOutTime).length;
+      const d = document.getElementById('desktopOnDutyBadge');
+      const m = document.getElementById('mobileOnDutyBadge');
+      if (d) d.textContent = count;
+      if (m) { m.textContent = count; m.classList.toggle('hidden', count === 0); }
+    }
+
+    function updateClocksAndTimers() {
+      const now = new Date();
+      const timeStr = now.toLocaleTimeString('en-IN', { hour12: true, hour: '2-digit', minute: '2-digit', second: '2-digit' });
+      const dateStr = now.toLocaleDateString('en-IN', { weekday: 'short', day: '2-digit', month: 'short' });
+      const fullStr = `${dateStr} • ${timeStr}`;
+
+      const loginClk = document.getElementById('loginClock');
+      if (loginClk) loginClk.textContent = fullStr;
+      const headClk = document.getElementById('headerClockSub');
+      if (headClk) headClk.textContent = timeStr;
+
+      if (state.session && state.session.role === 'employee') {
+        const active = getActiveShiftForEmployee(state.session.employeeId);
+        if (active) {
+          const timerEl = document.getElementById('empActiveTimer');
+          if (timerEl) timerEl.textContent = formatHMS(Date.now() - active.checkInTime);
+        }
+      }
+      if (state.activeTab === 'admin-dashboard') {
+        document.querySelectorAll('[data-live-since]').forEach((el) => {
+          el.textContent = formatShortDuration(Date.now() - Number(el.getAttribute('data-live-since')));
+        });
+      }
+    }
+
+    /* =========================================================================
+       EMPLOYEE VIEW 1: CHECK-IN (FIELD APP)
+       ========================================================================= */
+    function syncEmployeeDefaultShift(empId) {
+      const assigns = getActiveAssignmentsForEmployee(empId);
+      state.reliefMode = assigns.length === 0;
+      if (assigns.length) {
+        state.selectedSiteId = assigns[0].siteId;
+        state.selectedShiftId = assigns[0].shiftId;
+      } else if (state.sites.length) {
+        state.selectedSiteId = state.sites[0].id;
+        state.selectedShiftId = state.sites[0].shifts[0]?.id || '';
+      }
+      if (!state.settings.hideDemoSimulator) {
+        applySimulatedGPS(20, 40, false);
+      } else {
+        state.gpsSource = 'Real Device GPS';
+        recalculateDistanceAndUI();
+      }
+    }
+
+    function toggleReliefMode() {
+      state.reliefMode = !state.reliefMode;
+      if (!state.reliefMode && state.session?.employeeId) {
+        const assigns = getActiveAssignmentsForEmployee(state.session.employeeId);
+        if (assigns.length) {
+          state.selectedSiteId = assigns[0].siteId;
+          state.selectedShiftId = assigns[0].shiftId;
+        }
+      }
+      renderEmployeeCheckInView();
+    }
+
+    function renderEmployeeCheckInView() {
+      const emp = getEmployeeById(state.session.employeeId);
+      if (!emp) return;
+
+      const initials = emp.name.split(' ').map((w) => w[0]).join('').slice(0, 2).toUpperCase();
+      document.getElementById('empAvatarCircle').textContent = initials;
+      document.getElementById('empProfileName').textContent = emp.name;
+      document.getElementById('empProfileRoleBadge').innerHTML = getRoleBadgeHtml(emp.role);
+      document.getElementById('empProfileMeta').textContent = `${emp.id} • +91 ${emp.phone}`;
+
+      // Show/Hide Demo GPS Simulator based on Admin Production Mode toggle
+      document.getElementById('demoSimulatorBlock').classList.toggle('hidden', !!state.settings.hideDemoSimulator);
+
+      const selfiePill = document.getElementById('selfieRequirementPill');
+      if (state.capturedPhotoDataUrl) {
+        selfiePill.textContent = 'Proof Attached';
+        selfiePill.className = 'text-xs font-bold px-2.5 py-1 rounded-lg bg-green-100 text-green-800';
+      } else if (state.settings.mandatorySelfie) {
+        selfiePill.textContent = 'Required';
+        selfiePill.className = 'text-xs font-bold px-2.5 py-1 rounded-lg bg-red-100 text-[#DC2626]';
+      } else {
+        selfiePill.textContent = 'Optional';
+        selfiePill.className = 'text-xs font-bold px-2.5 py-1 rounded-lg bg-warmgray text-stone-600 border border-stone-200';
+      }
+
+      const siteSel = document.getElementById('empSiteSelect');
+      const assigns = getActiveAssignmentsForEmployee(emp.id);
+      siteSel.innerHTML = state.sites.map((s) => {
+        const star = assigns.some((a) => a.siteId === s.id) ? ' ★' : '';
+        return `<option value="${s.id}" ${s.id === state.selectedSiteId ? 'selected' : ''}>${escapeHtml(s.name)}${star}</option>`;
+      }).join('');
+
+      const site = getSelectedSite();
+      const shiftSel = document.getElementById('empShiftSelect');
+      if (site && site.shifts.length) {
+        if (!site.shifts.some((sh) => sh.id === state.selectedShiftId)) state.selectedShiftId = site.shifts[0].id;
+        shiftSel.innerHTML = site.shifts.map((sh) =>
+          `<option value="${sh.id}" ${sh.id === state.selectedShiftId ? 'selected' : ''}>${escapeHtml(sh.name)} (${sh.start}–${sh.end})</option>`
+        ).join('');
+      }
+
+      document.getElementById('reliefSelectorsWrap').classList.toggle('hidden', !state.reliefMode && assigns.length > 0);
+      document.getElementById('reliefToggleLabel').textContent = state.reliefMode ? 'Use Scheduled Shift' : 'Switch / Relief Site';
+
+      const shift = getSelectedShift();
+      const match = getMatchingAssignment(emp.id, site.id, shift ? shift.id : '');
+      const box = document.getElementById('empShiftSummaryBox');
+      if (match) {
+        box.className = 'rounded-2xl p-4 border bg-green-50/70 border-green-200 space-y-1.5';
+        box.innerHTML = `
+          <div class="flex items-start justify-between gap-2">
+            <div>
+              <div class="text-xs font-bold uppercase tracking-wider text-green-800">${escapeHtml(emp.role)}</div>
+              <div class="text-base font-extrabold text-obsidian-900 mt-0.5">${escapeHtml(site.name)}</div>
+              ${site.address ? `<div class="text-[11px] text-stone-500">${escapeHtml(site.address)}</div>` : ''}
+            </div>
+            <span class="px-2.5 py-1 rounded-full bg-[#16A34A] text-white text-[10px] font-extrabold uppercase shrink-0">Scheduled</span>
+          </div>
+          <div class="text-xs font-semibold text-stone-700">${escapeHtml(shift.name)} Shift • <span class="font-mono">${shift.start} – ${shift.end}</span> (${shift.graceMins}m grace)</div>
+          <div class="text-xs text-green-950 bg-white rounded-xl px-3 py-2 border border-green-200"><strong>Duty Note:</strong> ${escapeHtml(match.dutyNotes || 'Standard Post Duty')}</div>
+        `;
+      } else {
+        box.className = 'rounded-2xl p-4 border bg-gold-50 border-gold-300 space-y-1.5';
+        box.innerHTML = `
+          <div class="flex items-start justify-between gap-2">
+            <div>
+              <div class="text-xs font-bold uppercase tracking-wider text-gold-700">Relief / Unscheduled Duty</div>
+              <div class="text-base font-extrabold text-obsidian-900 mt-0.5">${escapeHtml(site.name)}</div>
+              ${site.address ? `<div class="text-[11px] text-stone-500">${escapeHtml(site.address)}</div>` : ''}
+            </div>
+            <span class="px-2.5 py-1 rounded-full bg-gold-500 text-obsidian-950 text-[10px] font-black uppercase shrink-0">Relief Duty</span>
+          </div>
+          <div class="text-xs font-semibold text-stone-700">${shift ? `${escapeHtml(shift.name)} Shift • <span class="font-mono">${shift.start} – ${shift.end}</span>` : 'Select shift below'}</div>
+        `;
+      }
+
+      const dutyBadge = document.getElementById('empDutyTypeBadge');
+      dutyBadge.textContent = match ? 'Scheduled' : 'Relief / Unscheduled';
+      dutyBadge.className = match
+        ? 'inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-bold bg-green-100 text-green-900 border border-green-200'
+        : 'inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-bold bg-gold-50 text-obsidian-900 border border-gold-300';
+
+      const punct = evaluatePunctuality(shift);
+      const punctBadge = document.getElementById('empPunctualityBadge');
+      punctBadge.textContent = punct.status === 'Late' ? `Late (+${punct.lateMins}m)` : 'On-Time';
+      punctBadge.className = punct.status === 'Late'
+        ? 'inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-bold bg-red-100 text-[#DC2626] border border-red-200'
+        : 'inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-bold bg-green-100 text-green-800 border border-green-200';
+
+      document.getElementById('empFenceChip').textContent = `Fence: ${site.radius}m`;
+
+      if (state.gpsSource === 'GPS Simulator' && !state.settings.hideDemoSimulator) {
+        applySimulatedGPS(state.simDistance, state.simBearing, false);
+      } else {
+        recalculateDistanceAndUI();
+      }
+      refreshIcons();
+    }
+
+    function handleEmpSiteChange() {
+      state.selectedSiteId = document.getElementById('empSiteSelect').value;
+      const site = getSelectedSite();
+      state.selectedShiftId = site.shifts[0]?.id || '';
+      renderEmployeeCheckInView();
+    }
+
+    function handleEmpShiftChange() {
+      state.selectedShiftId = document.getElementById('empShiftSelect').value;
+      renderEmployeeCheckInView();
+    }
+
+    /* =========================================================================
+       GPS VERIFICATION, DEMO SIMULATOR & HTML5 CANVAS RADAR
+       ========================================================================= */
+    function toggleSimulatorDrawer() {
+      state.simDrawerOpen = !state.simDrawerOpen;
+      document.getElementById('simulatorDrawerContent').classList.toggle('hidden', !state.simDrawerOpen);
+      document.getElementById('simDrawerChevron').style.transform = state.simDrawerOpen ? 'rotate(180deg)' : 'rotate(0deg)';
+      if (state.simDrawerOpen) setTimeout(resizeAndDrawRadar, 30);
+    }
+
+    function applySimulatedGPS(distM, bearingDeg = state.simBearing, announce = false) {
+      const site = getSelectedSite();
+      state.gpsSource = 'GPS Simulator';
+      state.simDistance = Number(distM);
+      state.simBearing = bearingDeg;
+      const coords = offsetCoordinates(site.lat, site.lng, state.simDistance, state.simBearing);
+      state.employeeLat = coords.lat;
+      state.employeeLng = coords.lng;
+
+      document.getElementById('distanceSlider').value = Math.min(600, state.simDistance);
+      document.getElementById('simSliderReadout').textContent = `${state.simDistance} m`;
+      document.getElementById('gpsSourceTag').textContent = 'Demo Simulator';
+      recalculateDistanceAndUI();
+      if (announce) showToast(`Simulated GPS: ${state.simDistance}m from site`, 'info');
+    }
+
+    function simulatePreset(type) {
+      const site = getSelectedSite();
+      if (type === 'inside') applySimulatedGPS(20, 40, true);
+      else if (type === 'edge') applySimulatedGPS(Math.max(10, site.radius - 5), 130, true);
+      else applySimulatedGPS(380, 310, true);
+    }
+
+    function handleDistanceSlider(val) { applySimulatedGPS(Number(val), state.simBearing, false); }
+
+    function useRealDeviceGPS() {
+      if (!navigator.geolocation) {
+        showToast('Geolocation not supported on this browser.', 'warning');
+        return;
+      }
+      const btn = document.getElementById('btnGetRealGPS');
+      btn.disabled = true;
+      showToast('Acquiring live GPS fix...', 'info');
+      navigator.geolocation.getCurrentPosition(
+        (pos) => {
+          btn.disabled = false;
+          state.gpsSource = 'Real Device GPS';
+          state.employeeLat = pos.coords.latitude;
+          state.employeeLng = pos.coords.longitude;
+          const site = getSelectedSite();
+          state.simBearing = calculateBearing(site.lat, site.lng, state.employeeLat, state.employeeLng);
+          document.getElementById('gpsSourceTag').textContent = `Live GPS (±${Math.round(pos.coords.accuracy)}m)`;
+          recalculateDistanceAndUI();
+          showToast('Live GPS location verified!', 'success');
+        },
+        (err) => {
+          btn.disabled = false;
+          showToast(`GPS unavailable (${err.message}).`, 'warning');
+        },
+        { enableHighAccuracy: true, timeout: 10000, maximumAge: 0 }
+      );
+    }
+
+    function recalculateDistanceAndUI() {
+      const site = getSelectedSite();
+      state.computedDistance = haversineDistance(site.lat, site.lng, state.employeeLat, state.employeeLng);
+      updateGeofenceUI();
+      if (state.simDrawerOpen && !state.settings.hideDemoSimulator) resizeAndDrawRadar();
+    }
+
+    function updateGeofenceUI() {
+      const site = getSelectedSite();
+      const dist = state.computedDistance;
+      const isInside = dist <= site.radius;
+
+      document.getElementById('distanceBigReadout').textContent = dist >= 1000 ? `${(dist / 1000).toFixed(2)}km` : `${dist}m`;
+      document.getElementById('distanceLimitReadout').textContent = `Max: ${site.radius}m`;
+      document.getElementById('siteLatLngText').textContent = `${site.lat.toFixed(4)}, ${site.lng.toFixed(4)}`;
+      document.getElementById('empLatLngText').textContent = `${state.employeeLat.toFixed(4)}, ${state.employeeLng.toFixed(4)}`;
+      document.getElementById('radarDistTag').textContent = `${dist}m`;
+
+      const card = document.getElementById('geofenceStatusCard');
+      const iconWrap = document.getElementById('geofenceStatusIconWrap');
+      const title = document.getElementById('geofenceStatusTitle');
+      const sub = document.getElementById('geofenceStatusSub');
+      const overridePanel = document.getElementById('overridePanel');
+      const overrideToggle = document.getElementById('overrideToggle');
+      const overrideNoteWrap = document.getElementById('overrideNoteWrap');
+
+      if (isInside) {
+        card.className = 'rounded-2xl p-4 border-2 flex items-center justify-between gap-3 bg-green-50 border-[#16A34A] text-green-950';
+        iconWrap.className = 'w-11 h-11 rounded-full flex items-center justify-center shrink-0 bg-[#16A34A] text-white';
+        iconWrap.innerHTML = '<i data-lucide="check" class="w-6 h-6"></i>';
+        title.textContent = `Inside Geofence - ${dist}m away`;
+        sub.textContent = `Verified • ${state.gpsSource}`;
+        overridePanel.classList.add('hidden');
+        overrideToggle.checked = false;
+        overrideNoteWrap.classList.add('hidden');
+      } else {
+        card.className = 'rounded-2xl p-4 border-2 flex items-center justify-between gap-3 bg-red-50 border-[#DC2626] text-red-950';
+        iconWrap.className = 'w-11 h-11 rounded-full flex items-center justify-center shrink-0 bg-[#DC2626] text-white';
+        iconWrap.innerHTML = '<i data-lucide="x" class="w-6 h-6"></i>';
+        title.textContent = `Outside Geofence - ${dist}m away`;
+        sub.textContent = `${dist - site.radius}m beyond allowed radius`;
+        overridePanel.classList.remove('hidden');
+        overrideNoteWrap.classList.toggle('hidden', !overrideToggle.checked);
+      }
+
+      renderEmployeeActiveState();
+      refreshIcons();
+    }
+
+    function renderEmployeeActiveState() {
+      if (!state.session || state.session.role !== 'employee') return;
+      const active = getActiveShiftForEmployee(state.session.employeeId);
+      const activeCard = document.getElementById('empActiveShiftCard');
+      const flowWrap = document.getElementById('empCheckInFlow');
+      const pill = document.getElementById('empDutyStatePill');
+      const btnIn = document.getElementById('btnEmpCheckIn');
+      const lbl = document.getElementById('btnEmpCheckInLabel');
+
+      if (active) {
+        activeCard.classList.remove('hidden');
+        flowWrap.classList.add('hidden');
+        pill.textContent = 'On Duty';
+        pill.className = 'px-2.5 py-1 rounded-full text-[11px] font-extrabold bg-green-100 text-green-800 shrink-0';
+        document.getElementById('empActivePunctPill').textContent = active.punctuality === 'Late' ? `Late (+${active.lateMins}m)` : 'On-Time';
+        document.getElementById('empActiveReliefPill').classList.toggle('hidden', active.dutyType === 'Scheduled');
+        document.getElementById('empActiveOverridePill').classList.toggle('hidden', !active.override);
+        document.getElementById('empActiveSiteTitle').textContent = active.siteName;
+        document.getElementById('empActiveShiftMeta').textContent = `${active.shiftLabel} • Checked in at ${formatTime(active.checkInTime)} (${active.distanceMeters}m)`;
+        document.getElementById('empActiveTimer').textContent = formatHMS(Date.now() - active.checkInTime);
+      } else {
+        activeCard.classList.add('hidden');
+        flowWrap.classList.remove('hidden');
+        pill.textContent = 'Off Duty';
+        pill.className = 'px-2.5 py-1 rounded-full text-[11px] font-extrabold bg-stone-100 text-stone-600 shrink-0';
+
+        const site = getSelectedSite();
+        const isInside = state.computedDistance <= site.radius;
+        const ovOn = document.getElementById('overrideToggle').checked;
+        const ovNote = document.getElementById('overrideNoteInput').value.trim();
+        const selfieOk = !state.settings.mandatorySelfie || !!state.capturedPhotoDataUrl;
+
+        const geoOk = isInside || (ovOn && ovNote.length >= 4);
+        btnIn.disabled = !(geoOk && selfieOk);
+
+        if (!geoOk) lbl.textContent = ovOn ? 'ENTER OVERRIDE REASON' : 'OUTSIDE GEOFENCE';
+        else if (!selfieOk) lbl.textContent = 'CAPTURE SELFIE / BADGE FIRST';
+        else lbl.textContent = isInside ? 'CHECK IN' : 'OVERRIDE & CHECK IN';
+      }
+    }
+
+    function resizeAndDrawRadar() {
+      const canvas = document.getElementById('radarCanvas');
+      const container = document.getElementById('radarContainer');
+      if (!canvas || !container || container.offsetWidth === 0) return;
+
+      const size = container.offsetWidth;
+      const dpr = window.devicePixelRatio || 1;
+      canvas.width = Math.round(size * dpr);
+      canvas.height = Math.round(size * dpr);
+      const ctx = canvas.getContext('2d');
+      ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+
+      const cx = size / 2, cy = size / 2;
+      const maxR = size / 2 - 8;
+      const site = getSelectedSite();
+      const dist = state.computedDistance;
+      const isInside = dist <= site.radius;
+      const maxMeters = Math.max(site.radius * 2.4, 450);
+
+      const bg = ctx.createRadialGradient(cx, cy, 4, cx, cy, maxR);
+      bg.addColorStop(0, '#26282E');
+      bg.addColorStop(1, '#0D0E10');
+      ctx.fillStyle = bg;
+      ctx.beginPath(); ctx.arc(cx, cy, maxR, 0, Math.PI * 2); ctx.fill();
+
+      ctx.strokeStyle = 'rgba(229,184,83,0.22)';
+      ctx.lineWidth = 1;
+      ctx.beginPath();
+      ctx.moveTo(cx, cy - maxR); ctx.lineTo(cx, cy + maxR);
+      ctx.moveTo(cx - maxR, cy); ctx.lineTo(cx + maxR, cy);
+      ctx.stroke();
+
+      [0.33, 0.66, 1].forEach((f) => {
+        ctx.beginPath(); ctx.arc(cx, cy, maxR * f, 0, Math.PI * 2);
+        ctx.strokeStyle = f === 1 ? 'rgba(229,184,83,0.45)' : 'rgba(229,184,83,0.18)';
+        ctx.stroke();
+      });
+
+      const fenceR = Math.max(24, Math.min(maxR * 0.72, (site.radius / maxMeters) * maxR));
+      ctx.fillStyle = 'rgba(22, 163, 74, 0.16)';
+      ctx.beginPath(); ctx.arc(cx, cy, fenceR, 0, Math.PI * 2); ctx.fill();
+      ctx.setLineDash([6, 4]); ctx.strokeStyle = '#16A34A'; ctx.lineWidth = 2; ctx.stroke(); ctx.setLineDash([]);
+
+      ctx.fillStyle = '#E5B853'; ctx.font = 'bold 10px Inter, sans-serif'; ctx.textAlign = 'center';
+      ctx.fillText(`FENCE ${site.radius}m`, cx, cy - fenceR - 5);
+
+      const pinDistPx = Math.min(maxR - 6, (dist / maxMeters) * maxR);
+      const rad = (state.simBearing * Math.PI) / 180;
+      const px = cx + pinDistPx * Math.sin(rad);
+      const py = cy - pinDistPx * Math.cos(rad);
+
+      ctx.setLineDash([3, 3]); ctx.strokeStyle = isInside ? '#4ADE80' : '#F87171'; ctx.lineWidth = 1.5;
+      ctx.beginPath(); ctx.moveTo(cx, cy); ctx.lineTo(px, py); ctx.stroke(); ctx.setLineDash([]);
+
+      ctx.fillStyle = '#E5B853'; ctx.beginPath(); ctx.arc(cx, cy, 5, 0, Math.PI * 2); ctx.fill();
+      ctx.strokeStyle = '#141518'; ctx.lineWidth = 2; ctx.stroke();
+
+      ctx.fillStyle = isInside ? 'rgba(22,163,74,0.35)' : 'rgba(220,38,38,0.38)';
+      ctx.beginPath(); ctx.arc(px, py, 13, 0, Math.PI * 2); ctx.fill();
+
+      ctx.fillStyle = isInside ? '#16A34A' : '#DC2626';
+      ctx.beginPath(); ctx.arc(px, py, 6.5, 0, Math.PI * 2); ctx.fill();
+      ctx.strokeStyle = '#ffffff'; ctx.lineWidth = 2; ctx.stroke();
+    }
+
+    function handleRadarPointer(clientX, clientY) {
+      const canvas = document.getElementById('radarCanvas');
+      const rect = canvas.getBoundingClientRect();
+      const dx = (clientX - rect.left) - rect.width / 2;
+      const dy = (clientY - rect.top) - rect.height / 2;
+      const maxR = rect.width / 2 - 8;
+      const site = getSelectedSite();
+      const maxMeters = Math.max(site.radius * 2.4, 450);
+      const distM = Math.min(600, Math.round((Math.sqrt(dx * dx + dy * dy) / maxR) * maxMeters));
+      const bearing = (Math.atan2(dx, -dy) * 180 / Math.PI + 360) % 360;
+      applySimulatedGPS(distM, bearing, false);
+    }
+
+    function bindRadarEvents() {
+      const canvas = document.getElementById('radarCanvas');
+      let dragging = false;
+      canvas.addEventListener('mousedown', (e) => { dragging = true; handleRadarPointer(e.clientX, e.clientY); });
+      window.addEventListener('mouseup', () => { dragging = false; });
+      canvas.addEventListener('mousemove', (e) => { if (dragging) handleRadarPointer(e.clientX, e.clientY); });
+      canvas.addEventListener('touchstart', (e) => { e.preventDefault(); if (e.touches[0]) handleRadarPointer(e.touches[0].clientX, e.touches[0].clientY); }, { passive: false });
+      canvas.addEventListener('touchmove', (e) => { e.preventDefault(); if (e.touches[0]) handleRadarPointer(e.touches[0].clientX, e.touches[0].clientY); }, { passive: false });
+      window.addEventListener('resize', () => { if (state.simDrawerOpen && !state.settings.hideDemoSimulator) resizeAndDrawRadar(); });
+    }
+
+    /* =========================================================================
+       SELFIE / DIGITAL BADGE & CHECK-IN / CHECK-OUT
+       ========================================================================= */
+    async function startCamera() {
+      if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+        showToast('Camera unavailable. Generated Digital Badge instead.', 'warning');
+        generateDigitalBadge();
+        return;
+      }
+      try {
+        stopCameraStream();
+        const stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: 'user', width: 320, height: 320 } });
+        state.cameraStream = stream;
+        const video = document.getElementById('cameraVideo');
+        video.srcObject = stream;
+        video.classList.remove('hidden');
+        document.getElementById('selfiePlaceholder').classList.add('hidden');
+        document.getElementById('selfiePreviewImg').classList.add('hidden');
+        document.getElementById('btnCapturePhoto').classList.remove('hidden');
+        document.getElementById('btnStartCamera').classList.add('hidden');
+      } catch (err) {
+        showToast('Camera permission denied. Generated Digital Badge.', 'warning');
+        generateDigitalBadge();
+      }
+    }
+
+    function captureCameraPhoto() {
+      const video = document.getElementById('cameraVideo');
+      const canvas = document.getElementById('selfieCanvas');
+      const ctx = canvas.getContext('2d');
+      ctx.drawImage(video, 0, 0, 240, 240);
+      ctx.fillStyle = 'rgba(20,21,24,0.88)';
+      ctx.fillRect(0, 194, 240, 46);
+      ctx.fillStyle = '#E5B853'; ctx.font = 'bold 11px Inter, sans-serif';
+      ctx.fillText(`PFSS SELFIE • ${formatTime(Date.now())}`, 10, 213);
+      ctx.fillStyle = '#e7e5e4'; ctx.font = '10px monospace';
+      ctx.fillText(`${state.employeeLat.toFixed(4)}, ${state.employeeLng.toFixed(4)}`, 10, 229);
+
+      state.capturedPhotoDataUrl = canvas.toDataURL('image/jpeg', 0.8);
+      state.capturedPhotoLabel = `Live Selfie (${formatTime(Date.now())})`;
+      stopCameraStream();
+      showSelfiePreview(state.capturedPhotoDataUrl);
+      showToast('Live selfie attached!', 'success');
+    }
+
+    function generateDigitalBadge() {
+      stopCameraStream();
+      const emp = getEmployeeById(state.session?.employeeId) || { id: 'PFSS', name: 'Staff', role: 'Employee' };
+      const canvas = document.getElementById('selfieCanvas');
+      const ctx = canvas.getContext('2d');
+
+      const drawBadgeFrame = (logoImg) => {
+        const grad = ctx.createLinearGradient(0, 0, 240, 240);
+        grad.addColorStop(0, '#141518'); grad.addColorStop(1, '#262930');
+        ctx.fillStyle = grad; ctx.fillRect(0, 0, 240, 240);
+        ctx.strokeStyle = '#E5B853'; ctx.lineWidth = 4; ctx.strokeRect(4, 4, 232, 232);
+
+        if (logoImg) {
+          ctx.save();
+          ctx.beginPath();
+          ctx.arc(120, 68, 40, 0, Math.PI * 2);
+          ctx.closePath();
+          ctx.clip();
+          ctx.drawImage(logoImg, 80, 28, 80, 80);
+          ctx.restore();
+          ctx.strokeStyle = '#E5B853'; ctx.lineWidth = 2.5;
+          ctx.beginPath(); ctx.arc(120, 68, 40, 0, Math.PI * 2); ctx.stroke();
+        } else {
+          ctx.fillStyle = 'rgba(229,184,83,0.18)';
+          ctx.beginPath(); ctx.arc(120, 68, 36, 0, Math.PI * 2); ctx.fill();
+          ctx.strokeStyle = '#E5B853'; ctx.lineWidth = 2; ctx.stroke();
+          ctx.fillStyle = '#E5B853'; ctx.font = 'bold 24px Inter, sans-serif'; ctx.textAlign = 'center';
+          ctx.fillText(emp.name.split(' ').map((w) => w[0]).join('').slice(0, 2).toUpperCase(), 120, 77);
+        }
+
+        ctx.textAlign = 'center';
+        ctx.fillStyle = '#FFFFFF'; ctx.font = 'bold 14px Inter, sans-serif'; ctx.fillText(emp.name.slice(0, 20), 120, 134);
+        ctx.fillStyle = '#E5B853'; ctx.font = 'bold 10px Inter, sans-serif'; ctx.fillText(emp.role.toUpperCase().slice(0, 22), 120, 152);
+        ctx.fillStyle = '#D6D3D1'; ctx.font = 'bold 10px monospace'; ctx.fillText(`PUBLIC FORCE • #${emp.id}`, 120, 172);
+        ctx.fillStyle = 'rgba(0,0,0,0.55)'; ctx.fillRect(6, 194, 228, 40);
+        ctx.fillStyle = '#4ADE80'; ctx.font = '10px monospace';
+        ctx.fillText(`${formatTime(Date.now())} | ${state.employeeLat.toFixed(4)}, ${state.employeeLng.toFixed(4)}`, 120, 218);
+        ctx.textAlign = 'left';
+
+        state.capturedPhotoDataUrl = canvas.toDataURL('image/png');
+        state.capturedPhotoLabel = `Digital Badge #${emp.id}`;
+        showSelfiePreview(state.capturedPhotoDataUrl);
+        showToast('Timestamped Digital Badge created.', 'info');
+      };
+
+      const logoImg = new Image();
+      logoImg.onload = () => drawBadgeFrame(logoImg);
+      logoImg.onerror = () => drawBadgeFrame(null);
+      logoImg.src = state.customLogoDataUrl || 'icon-512.png';
+    }
+
+    function showSelfiePreview(url) {
+      const img = document.getElementById('selfiePreviewImg');
+      img.src = url; img.classList.remove('hidden');
+      document.getElementById('selfiePlaceholder').classList.add('hidden');
+      document.getElementById('btnClearPhoto').classList.remove('hidden');
+      renderEmployeeCheckInView();
+    }
+
+    function clearSelfie() {
+      stopCameraStream();
+      state.capturedPhotoDataUrl = null;
+      state.capturedPhotoLabel = '';
+      document.getElementById('selfiePreviewImg').classList.add('hidden');
+      document.getElementById('selfiePlaceholder').classList.remove('hidden');
+      document.getElementById('btnClearPhoto').classList.add('hidden');
+      if (state.session?.role === 'employee') renderEmployeeCheckInView();
+    }
+
+    function stopCameraStream() {
+      if (state.cameraStream) {
+        state.cameraStream.getTracks().forEach((t) => t.stop());
+        state.cameraStream = null;
+      }
+      const v = document.getElementById('cameraVideo');
+      if (v) v.classList.add('hidden');
+      const bc = document.getElementById('btnCapturePhoto');
+      if (bc) bc.classList.add('hidden');
+      const bs = document.getElementById('btnStartCamera');
+      if (bs) bs.classList.remove('hidden');
+    }
+
+    function handleEmployeeCheckIn() {
+      const emp = getEmployeeById(state.session?.employeeId);
+      if (!emp || getActiveShiftForEmployee(emp.id)) return;
+      const site = getSelectedSite();
+      const shift = getSelectedShift();
+      const isInside = state.computedDistance <= site.radius;
+      const ovOn = document.getElementById('overrideToggle').checked;
+      const ovNote = document.getElementById('overrideNoteInput').value.trim();
+
+      if (!isInside && (!ovOn || ovNote.length < 4)) {
+        showToast('Outside geofence. Enable Supervisor Override with a reason.', 'error');
+        return;
+      }
+      if (state.settings.mandatorySelfie && !state.capturedPhotoDataUrl) {
+        showToast('Live Selfie or Digital Badge is required.', 'error');
+        return;
+      }
+
+      const punct = evaluatePunctuality(shift);
+      const match = getMatchingAssignment(emp.id, site.id, shift ? shift.id : '');
+
+      state.logs.unshift({
+        id: 'LOG-' + Date.now(),
+        employeeId: emp.id,
+        employeeName: emp.name,
+        role: emp.role,
+        siteId: site.id,
+        siteName: site.name,
+        shiftId: shift ? shift.id : '',
+        shiftLabel: shift ? `${shift.name} (${shift.start} - ${shift.end})` : 'Unscheduled',
+        dateStr: getTodayISO(),
+        checkInTime: Date.now(),
+        checkOutTime: null,
+        distanceMeters: state.computedDistance,
+        allowedRadius: site.radius,
+        gpsLat: state.employeeLat,
+        gpsLng: state.employeeLng,
+        gpsSource: state.gpsSource,
+        verified: isInside,
+        punctuality: punct.status,
+        lateMins: punct.lateMins,
+        dutyType: match ? 'Scheduled' : 'Relief / Unscheduled',
+        dutyNotes: match ? match.dutyNotes : '',
+        override: !isInside && ovOn,
+        overrideNote: !isInside ? ovNote : '',
+        photoStamp: state.capturedPhotoLabel || 'No Photo',
+        photoDataUrl: state.capturedPhotoDataUrl || null,
+      });
+
+      saveData();
+      document.getElementById('overrideToggle').checked = false;
+      document.getElementById('overrideNoteInput').value = '';
+      clearSelfie();
+      updateOnDutyBadges();
+      renderEmployeeCheckInView();
+      showToast(`Checked in at ${site.name} (${punct.status})!`, isInside ? 'success' : 'warning');
+    }
+
+    function handleEmployeeCheckOut(logId = null) {
+      const target = logId
+        ? state.logs.find((l) => l.id === logId)
+        : getActiveShiftForEmployee(state.session?.employeeId);
+      if (!target || target.checkOutTime) return;
+      target.checkOutTime = Date.now();
+      saveData();
+      updateOnDutyBadges();
+      if (state.session?.role === 'admin') renderAdminDashboard();
+      else renderEmployeeCheckInView();
+      showToast(`Checked out (${formatShortDuration(target.checkOutTime - target.checkInTime)} worked).`, 'success');
+    }
+
+    /* =========================================================================
+       EMPLOYEE VIEW 2 (MY SHIFTS) & VIEW 3 (MY HISTORY)
+       ========================================================================= */
+    function renderEmployeeShiftsView() {
+      const empId = state.session?.employeeId;
+      const myAssigns = state.assignments.filter((a) => a.employeeId === empId && getSiteById(a.siteId) && getShiftById(a.siteId, a.shiftId));
+      document.getElementById('empMyShiftsEmpty').classList.toggle('hidden', myAssigns.length > 0);
+      document.getElementById('empMyShiftsList').innerHTML = myAssigns.map((a) => {
+        const site = getSiteById(a.siteId);
+        const shift = getShiftById(a.siteId, a.shiftId);
+        return `
+          <div class="rounded-2xl border border-stone-200 bg-warmgray p-4 space-y-2.5">
+            <div class="flex items-start justify-between gap-2">
+              <div>
+                <div class="text-base font-extrabold text-obsidian-900">${escapeHtml(site.name)}</div>
+                ${site.address ? `<div class="text-[11px] text-stone-500 mt-0.5">${escapeHtml(site.address)}</div>` : ''}
+                <div class="text-xs font-semibold text-stone-700 mt-1">${escapeHtml(shift.name)} Shift • <span class="font-mono">${shift.start} – ${shift.end}</span></div>
+              </div>
+              ${a.recurring
+                ? '<span class="px-2.5 py-1 rounded-full bg-green-100 text-green-800 text-[11px] font-bold shrink-0">Recurring Daily</span>'
+                : `<span class="px-2.5 py-1 rounded-full bg-gold-50 text-obsidian-900 border border-gold-300 text-[11px] font-bold font-mono shrink-0">${escapeHtml(a.date)}</span>`}
+            </div>
+            <div class="text-xs text-stone-700 bg-white rounded-xl p-3 border border-stone-200 space-y-1">
+              <div><strong>Duty Note:</strong> ${escapeHtml(a.dutyNotes || 'Standard Assignment')}</div>
+              <div class="text-stone-500">Grace Window: ${shift.graceMins} mins • Geofence: ${site.radius}m</div>
+            </div>
+          </div>
+        `;
+      }).join('');
+    }
+
+    function renderEmployeeHistoryView() {
+      const empId = state.session?.employeeId;
+      const myLogs = state.logs.filter((l) => l.employeeId === empId);
+      document.getElementById('empHistoryCountBadge').textContent = `${myLogs.length} Punch${myLogs.length === 1 ? '' : 'es'}`;
+      document.getElementById('empMyHistoryEmpty').classList.toggle('hidden', myLogs.length > 0);
+
+      document.getElementById('empMyHistoryList').innerHTML = myLogs.map((l) => {
+        const isActive = !l.checkOutTime;
+        const dur = (l.checkOutTime || Date.now()) - l.checkInTime;
+        return `
+          <div class="rounded-2xl border border-stone-200 bg-warmgray p-4 space-y-2.5">
+            <div class="flex items-start justify-between gap-2">
+              <div>
+                <div class="text-sm font-extrabold text-obsidian-900">${escapeHtml(l.siteName)}</div>
+                <div class="text-xs text-stone-500">${escapeHtml(l.dateStr)} • ${escapeHtml(l.shiftLabel)}</div>
+              </div>
+              <span class="font-mono text-sm font-black text-obsidian-900">${formatShortDuration(dur)}</span>
+            </div>
+            <div class="flex flex-wrap items-center gap-1.5">
+              ${isActive ? '<span class="px-2 py-0.5 rounded-full text-[11px] font-bold bg-green-100 text-green-800">Active Now</span>' : '<span class="px-2 py-0.5 rounded-full text-[11px] font-bold bg-stone-200 text-stone-700">Completed</span>'}
+              ${l.punctuality === 'Late' ? `<span class="px-2 py-0.5 rounded-full text-[11px] font-bold bg-red-100 text-[#DC2626]">Late (+${l.lateMins}m)</span>` : '<span class="px-2 py-0.5 rounded-full text-[11px] font-bold bg-green-50 text-green-800">On-Time</span>'}
+              ${l.verified ? '<span class="px-2 py-0.5 rounded-full text-[11px] font-bold bg-green-100 text-green-800">Verified GPS</span>' : '<span class="px-2 py-0.5 rounded-full text-[11px] font-bold bg-gold-100 text-obsidian-900">Override</span>'}
+              <span class="px-2 py-0.5 rounded-full text-[11px] font-bold bg-white border border-stone-200 text-stone-600">${escapeHtml(l.photoStamp)}</span>
+            </div>
+            <div class="text-xs font-mono text-stone-600 bg-white rounded-xl px-3 py-2 border border-stone-200 flex items-center justify-between">
+              <span>In: ${formatTime(l.checkInTime)}</span>
+              <span>${l.checkOutTime ? 'Out: ' + formatTime(l.checkOutTime) : 'On Duty'}</span>
+              <span>${l.distanceMeters}m</span>
+            </div>
+          </div>
+        `;
+      }).join('');
+    }
+
+    /* =========================================================================
+       ADMIN VIEW 1: DASHBOARD
+       ========================================================================= */
+    function populateAdminFilters() {
+      const siteSel = document.getElementById('adminFilterSite');
+      const curSite = siteSel.value;
+      siteSel.innerHTML = '<option value="ALL">All Client Sites</option>' +
+        state.sites.map((s) => `<option value="${s.id}">${escapeHtml(s.name)}</option>`).join('');
+      if ([...siteSel.options].some((o) => o.value === curSite)) siteSel.value = curSite;
+    }
+
+    function toggleAdminRoleFilter(role) {
+      state.adminRoleFilter = role;
+      renderAdminDashboard();
+    }
+
+    function getFilteredLogs() {
+      const q = document.getElementById('adminSearch').value.trim().toLowerCase();
+      const siteVal = document.getElementById('adminFilterSite').value;
+      const statusVal = document.getElementById('adminFilterStatus').value;
+
+      return state.logs.filter((l) => {
+        if (q && !`${l.employeeName} ${l.employeeId} ${l.role} ${l.siteName}`.toLowerCase().includes(q)) return false;
+        if (state.adminRoleFilter !== 'ALL' && l.role !== state.adminRoleFilter) return false;
+        if (siteVal !== 'ALL' && l.siteId !== siteVal) return false;
+        if (statusVal === 'ACTIVE' && l.checkOutTime) return false;
+        if (statusVal === 'COMPLETED' && !l.checkOutTime) return false;
+        if (statusVal === 'LATE' && l.punctuality !== 'Late') return false;
+        if (statusVal === 'RELIEF' && l.dutyType === 'Scheduled') return false;
+        if (statusVal === 'OVERRIDE' && !l.override) return false;
+        return true;
+      });
+    }
+
+    function renderAdminDashboard() {
+      const today = getTodayISO();
+      const activeLogs = state.logs.filter((l) => !l.checkOutTime);
+      const todayLogs = state.logs.filter((l) => l.dateStr === today);
+      const lateCount = state.logs.filter((l) => l.punctuality === 'Late').length;
+      const ovCount = state.logs.filter((l) => l.override).length;
+      const lateOrOvCount = state.logs.filter((l) => l.punctuality === 'Late' || l.override).length;
+      const totalMs = state.logs.reduce((acc, l) => acc + Math.max(0, (l.checkOutTime || Date.now()) - l.checkInTime), 0);
+
+      document.getElementById('kpiOnDuty').textContent = activeLogs.length;
+      document.getElementById('kpiPresentToday').textContent = todayLogs.length;
+      document.getElementById('kpiLateOverride').textContent = lateOrOvCount;
+      document.getElementById('kpiLateOverrideSub').textContent = `${lateCount} late • ${ovCount} override`;
+      document.getElementById('kpiTotalHours').textContent = `${(totalMs / 3600000).toFixed(1)}h`;
+
+      // Department Headcount Breakdown Pills
+      const pillsWrap = document.getElementById('adminRoleBreakdownPills');
+      const allBtn = `
+        <button type="button" onclick="toggleAdminRoleFilter('ALL')"
+          class="min-h-[42px] px-3.5 rounded-xl border text-xs font-bold whitespace-nowrap shrink-0 flex items-center gap-2 transition active:scale-95 ${
+            state.adminRoleFilter === 'ALL' ? 'bg-obsidian-900 text-gold-400 border-gold-500/50' : 'bg-warmgray text-stone-700 border-stone-200'
+          }">
+          <span>All</span>
+          <span class="px-1.5 py-0.5 rounded-md ${state.adminRoleFilter === 'ALL' ? 'bg-gold-500 text-obsidian-950' : 'bg-white text-obsidian-900'} font-mono text-[11px]">${activeLogs.length}/${state.employees.length}</span>
+        </button>
+      `;
+      const roleBtns = getAllRoles().map((role) => {
+        const total = state.employees.filter((e) => e.role === role).length;
+        const active = activeLogs.filter((l) => l.role === role).length;
+        if (total === 0 && active === 0) return '';
+        const sel = state.adminRoleFilter === role;
+        const cls = ROLE_STYLES[role] || 'bg-stone-100 text-stone-800 border-stone-300';
+        return `
+          <button type="button" onclick="toggleAdminRoleFilter('${escapeAttr(role)}')"
+            class="min-h-[42px] px-3 rounded-xl border text-xs font-bold whitespace-nowrap shrink-0 flex items-center gap-2 transition active:scale-95 ${cls} ${sel ? 'ring-2 ring-gold-500' : ''}">
+            <span>${escapeHtml(role)}</span>
+            <span class="px-1.5 py-0.5 rounded-md bg-white/90 text-obsidian-900 font-mono text-[11px]">${active}/${total}</span>
+          </button>
+        `;
+      }).join('');
+      pillsWrap.innerHTML = allBtn + roleBtns;
+
+      const filtered = getFilteredLogs();
+      document.getElementById('emptyAdminState').classList.toggle('hidden', filtered.length > 0);
+
+      // Mobile Cards
+      document.getElementById('adminMobileCards').innerHTML = filtered.map((l) => {
+        const isActive = !l.checkOutTime;
+        const dur = (l.checkOutTime || Date.now()) - l.checkInTime;
+        return `
+          <div onclick="openAuditModal('${l.id}')" class="rounded-2xl border border-stone-200 bg-warmgray p-4 space-y-2.5 active:bg-stone-200/60 transition cursor-pointer">
+            <div class="flex items-start justify-between gap-2">
+              <div>
+                <div class="font-extrabold text-obsidian-900 text-sm">${escapeHtml(l.employeeName)} <span class="font-mono text-xs text-stone-500">${escapeHtml(l.employeeId)}</span></div>
+                <div class="mt-1 flex flex-wrap items-center gap-1.5">
+                  ${getRoleBadgeHtml(l.role)}
+                  ${isActive ? '<span class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-green-100 text-green-800">On Duty</span>' : '<span class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-stone-200 text-stone-700">Done</span>'}
+                  ${l.punctuality === 'Late' ? '<span class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-red-100 text-[#DC2626]">Late</span>' : '<span class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-green-50 text-green-800">On-Time</span>'}
+                  ${l.override ? '<span class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-gold-100 text-obsidian-900">Override</span>' : ''}
+                </div>
+              </div>
+              <span class="text-xs font-mono font-bold ${l.verified ? 'text-[#16A34A]' : 'text-[#DC2626]'} shrink-0">${l.distanceMeters}m</span>
+            </div>
+            <div class="text-xs text-stone-700 bg-white rounded-xl p-3 border border-stone-200 flex items-center justify-between gap-2">
+              <div class="min-w-0">
+                <div class="font-bold text-obsidian-900 truncate">${escapeHtml(l.siteName)}</div>
+                <div class="text-stone-500 truncate">${escapeHtml(l.shiftLabel)}</div>
+                <div class="font-mono text-[11px] text-stone-600 mt-1">${escapeHtml(l.dateStr)} • In: ${formatTime(l.checkInTime)}${l.checkOutTime ? ' • Out: ' + formatTime(l.checkOutTime) : ''}</div>
+              </div>
+              <div class="text-right shrink-0">
+                <div class="font-mono font-black text-obsidian-900" ${isActive ? `data-live-since="${l.checkInTime}"` : ''}>${formatShortDuration(dur)}</div>
+                ${isActive ? `<button type="button" onclick="event.stopPropagation(); handleEmployeeCheckOut('${l.id}')" class="mt-2 min-h-[38px] px-3 rounded-lg bg-[#DC2626] text-white text-[11px] font-bold">Force Out</button>` : ''}
+              </div>
+            </div>
+          </div>
+        `;
+      }).join('');
+
+      // Desktop Table
+      document.getElementById('adminDesktopBody').innerHTML = filtered.map((l) => {
+        const isActive = !l.checkOutTime;
+        const dur = (l.checkOutTime || Date.now()) - l.checkInTime;
+        return `
+          <tr class="hover:bg-warmgray/70">
+            <td class="py-3 px-4"><div class="font-bold text-obsidian-900">${escapeHtml(l.employeeName)}</div><div class="text-xs font-mono text-stone-500">${escapeHtml(l.employeeId)}</div></td>
+            <td class="py-3 px-3">${getRoleBadgeHtml(l.role)}</td>
+            <td class="py-3 px-3"><div class="font-semibold text-obsidian-900">${escapeHtml(l.siteName)}</div><div class="text-xs text-stone-500">${escapeHtml(l.shiftLabel)}</div></td>
+            <td class="py-3 px-3 text-xs font-mono"><div class="text-stone-400">${escapeHtml(l.dateStr)}</div><div>In: ${formatTime(l.checkInTime)}</div><div class="${isActive ? 'text-[#16A34A] font-sans font-bold' : 'text-stone-500'}">${l.checkOutTime ? 'Out: ' + formatTime(l.checkOutTime) : 'On Duty'}</div></td>
+            <td class="py-3 px-3 text-xs font-mono font-bold" ${isActive ? `data-live-since="${l.checkInTime}"` : ''}>${formatShortDuration(dur)}</td>
+            <td class="py-3 px-3">
+              <div class="text-xs font-mono font-bold ${l.verified ? 'text-[#16A34A]' : 'text-[#DC2626]'}">${l.distanceMeters}m ${l.verified ? '✓' : '⚠'}</div>
+              <div class="flex flex-wrap gap-1 mt-1">
+                ${l.punctuality === 'Late' ? '<span class="px-1.5 py-0.5 rounded bg-red-100 text-[#DC2626] text-[10px] font-bold">Late</span>' : '<span class="px-1.5 py-0.5 rounded bg-green-50 text-green-800 text-[10px] font-bold">On-Time</span>'}
+                ${l.dutyType !== 'Scheduled' ? '<span class="px-1.5 py-0.5 rounded bg-gold-50 text-obsidian-900 text-[10px] font-bold border border-gold-200">Relief</span>' : ''}
+                ${l.override ? '<span class="px-1.5 py-0.5 rounded bg-gold-100 text-obsidian-900 text-[10px] font-bold">Override</span>' : ''}
+              </div>
+            </td>
+            <td class="py-3 px-4 text-right whitespace-nowrap space-x-1">
+              <button type="button" onclick="openAuditModal('${l.id}')" class="min-h-[38px] px-3 rounded-lg bg-warmgray hover:bg-stone-200 text-obsidian-900 border border-stone-200 text-xs font-bold">Audit</button>
+              ${isActive ? `<button type="button" onclick="handleEmployeeCheckOut('${l.id}')" class="min-h-[38px] px-3 rounded-lg bg-red-50 hover:bg-red-100 text-[#DC2626] text-xs font-bold">Force Out</button>` : ''}
+            </td>
+          </tr>
+        `;
+      }).join('');
+      refreshIcons();
+    }
+
+    function openAuditModal(logId) {
+      const l = state.logs.find((x) => x.id === logId);
+      if (!l) return;
+      const body = `
+        <div class="space-y-3 text-xs">
+          <div class="p-3.5 rounded-xl bg-warmgray border border-stone-200 flex flex-wrap items-center justify-between gap-2">
+            <div>
+              <div class="text-sm font-extrabold text-obsidian-900">${escapeHtml(l.employeeName)} <span class="font-mono text-xs text-stone-500">${escapeHtml(l.employeeId)}</span></div>
+              <div class="mt-1">${getRoleBadgeHtml(l.role)}</div>
+            </div>
+            <span class="px-2.5 py-1 rounded-full font-bold ${l.verified ? 'bg-green-100 text-green-800' : 'bg-gold-100 text-obsidian-900'}">${l.verified ? 'Verified GPS' : 'Geofence Override'}</span>
+          </div>
+          <div class="grid grid-cols-2 gap-2.5">
+            <div class="p-3 rounded-xl border border-stone-200"><span class="text-stone-400 block">Site</span><strong class="text-obsidian-900">${escapeHtml(l.siteName)}</strong></div>
+            <div class="p-3 rounded-xl border border-stone-200"><span class="text-stone-400 block">Shift</span><strong class="text-obsidian-900">${escapeHtml(l.shiftLabel)}</strong></div>
+            <div class="p-3 rounded-xl border border-stone-200"><span class="text-stone-400 block">Punctuality</span><strong class="${l.punctuality === 'Late' ? 'text-[#DC2626]' : 'text-[#16A34A]'}">${l.punctuality}${l.lateMins ? ` (+${l.lateMins}m)` : ''}</strong></div>
+            <div class="p-3 rounded-xl border border-stone-200"><span class="text-stone-400 block">Duty Type</span><strong>${escapeHtml(l.dutyType)}</strong></div>
+            <div class="p-3 rounded-xl border border-stone-200"><span class="text-stone-400 block">GPS Coords</span><strong class="font-mono">${l.gpsLat.toFixed(5)}, ${l.gpsLng.toFixed(5)}</strong></div>
+            <div class="p-3 rounded-xl border border-stone-200"><span class="text-stone-400 block">Distance</span><strong class="font-mono">${l.distanceMeters}m (Max ${l.allowedRadius}m)</strong></div>
+          </div>
+          ${l.dutyNotes ? `<div class="p-3 rounded-xl bg-warmgray border border-stone-200"><strong>Duty Note:</strong> ${escapeHtml(l.dutyNotes)}</div>` : ''}
+          ${l.overrideNote ? `<div class="p-3 rounded-xl bg-gold-50 border border-gold-400 text-obsidian-900"><strong>Override Reason:</strong> ${escapeHtml(l.overrideNote)}</div>` : ''}
+          <div class="flex items-center gap-3 p-3 rounded-xl border border-stone-200">
+            ${l.photoDataUrl ? `<img src="${l.photoDataUrl}" alt="Verification" class="w-20 h-20 rounded-xl object-cover border border-stone-300" />` : '<div class="w-12 h-12 rounded-xl bg-warmgray flex items-center justify-center text-gold-600"><i data-lucide="badge-check" class="w-6 h-6"></i></div>'}
+            <div>
+              <span class="text-stone-400 block">Verification Proof</span>
+              <strong class="text-obsidian-900">${escapeHtml(l.photoStamp)}</strong>
+              <div class="text-stone-500 mt-0.5">Source: ${escapeHtml(l.gpsSource)}</div>
+            </div>
+          </div>
+        </div>
+      `;
+      const btns = [{ label: 'Close', cls: 'min-h-[48px] px-5 rounded-xl bg-obsidian-900 text-gold-400 font-bold text-sm', onClick: closeModal }];
+      if (!l.checkOutTime) {
+        btns.unshift({ label: 'Force Check-Out', cls: 'min-h-[48px] px-4 rounded-xl bg-[#DC2626] text-white font-bold text-sm', onClick: () => { closeModal(); handleEmployeeCheckOut(l.id); } });
+      }
+      openModal('Attendance Audit Details', body, btns);
+    }
+
+    function exportFilteredCSV() {
+      const logs = getFilteredLogs();
+      if (!logs.length) { showToast('No logs to export.', 'warning'); return; }
+      const headers = ['Date', 'Employee ID', 'Name', 'Department', 'Site', 'Shift', 'In', 'Out', 'Hours', 'Punctuality', 'Duty Type', 'Distance (m)', 'Override Reason'];
+      const rows = logs.map((l) => {
+        const hrs = (((l.checkOutTime || Date.now()) - l.checkInTime) / 3600000).toFixed(2);
+        return [
+          l.dateStr, l.employeeId, l.employeeName, l.role, l.siteName, l.shiftLabel,
+          formatTime(l.checkInTime), l.checkOutTime ? formatTime(l.checkOutTime) : 'Active',
+          hrs, l.punctuality, l.dutyType, l.distanceMeters, l.overrideNote || ''
+        ].map((v) => `"${String(v).replace(/"/g, '""')}"`).join(',');
+      });
+      const blob = new Blob([[headers.join(','), ...rows].join('\n')], { type: 'text/csv;charset=utf-8;' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url; a.download = `PFSS_Attendance_${getTodayISO()}.csv`;
+      document.body.appendChild(a); a.click(); document.body.removeChild(a); URL.revokeObjectURL(url);
+      showToast(`Exported ${logs.length} payroll records to CSV.`, 'success');
+    }
+
+    /* =========================================================================
+       ADMIN VIEW 2: ROSTER
+       ========================================================================= */
+    function renderRolePillBar(containerId, currentRole, fnName) {
+      const roles = ['ALL', ...getAllRoles()];
+      document.getElementById(containerId).innerHTML = roles.map((role) => {
+        const active = currentRole === role;
+        return `
+          <button type="button" onclick="${fnName}('${escapeAttr(role)}')"
+            class="min-h-[40px] px-3.5 rounded-full text-xs font-bold whitespace-nowrap shrink-0 border transition active:scale-95 ${
+              active ? 'bg-obsidian-900 text-gold-400 border-gold-500/50' : 'bg-warmgray text-stone-700 border-stone-200 hover:bg-stone-200/70'
+            }">
+            ${escapeHtml(role === 'ALL' ? 'All Roles' : role)}
+          </button>
+        `;
+      }).join('');
+    }
+
+    function setRosterRoleFilter(role) { state.rosterRoleFilter = role; renderRosterView(); }
+
+    function renderRosterView() {
+      const siteSel = document.getElementById('rosterFilterSite');
+      const prev = siteSel.value;
+      siteSel.innerHTML = '<option value="ALL">All Client Sites</option>' +
+        state.sites.map((s) => `<option value="${s.id}">${escapeHtml(s.name)}</option>`).join('');
+      if ([...siteSel.options].some((o) => o.value === prev)) siteSel.value = prev;
+
+      renderRolePillBar('rosterRolePills', state.rosterRoleFilter, 'setRosterRoleFilter');
+
+      const siteFilter = siteSel.value;
+      const rows = state.assignments.filter((a) => {
+        const emp = getEmployeeById(a.employeeId), site = getSiteById(a.siteId), sh = getShiftById(a.siteId, a.shiftId);
+        if (!emp || !site || !sh) return false;
+        if (siteFilter !== 'ALL' && a.siteId !== siteFilter) return false;
+        if (state.rosterRoleFilter !== 'ALL' && emp.role !== state.rosterRoleFilter) return false;
+        return true;
+      });
+
+      document.getElementById('emptyRosterState').classList.toggle('hidden', rows.length > 0);
+
+      document.getElementById('rosterMobileCards').innerHTML = rows.map((a) => {
+        const emp = getEmployeeById(a.employeeId), site = getSiteById(a.siteId), sh = getShiftById(a.siteId, a.shiftId);
+        return `
+          <div class="rounded-2xl border border-stone-200 bg-warmgray p-4 space-y-2.5">
+            <div class="flex items-start justify-between gap-2">
+              <div>
+                <div class="font-extrabold text-obsidian-900 text-sm">${escapeHtml(emp.name)} <span class="font-mono text-xs text-stone-500">${escapeHtml(emp.id)}</span></div>
+                <div class="mt-1 flex flex-wrap items-center gap-1.5">
+                  ${getRoleBadgeHtml(emp.role)}
+                  ${a.recurring ? '<span class="px-2 py-0.5 rounded-full text-[11px] font-bold bg-green-100 text-green-800">Daily</span>' : `<span class="px-2 py-0.5 rounded-full text-[11px] font-bold bg-gold-50 text-obsidian-900 border border-gold-300 font-mono">${escapeHtml(a.date)}</span>`}
+                </div>
+              </div>
+              <button type="button" onclick="deleteAssignment('${a.id}')" class="w-10 h-10 rounded-xl bg-red-50 text-[#DC2626] flex items-center justify-center shrink-0"><i data-lucide="trash-2" class="w-4 h-4"></i></button>
+            </div>
+            <div class="text-xs text-stone-700 bg-white rounded-xl p-3 border border-stone-200 space-y-1">
+              <div class="font-bold text-obsidian-900">${escapeHtml(site.name)}</div>
+              <div>${escapeHtml(sh.name)} <span class="font-mono text-stone-500">(${sh.start}–${sh.end})</span></div>
+              ${a.dutyNotes ? `<div class="text-stone-600 pt-1 border-t border-stone-100"><strong>Duty:</strong> ${escapeHtml(a.dutyNotes)}</div>` : ''}
+            </div>
+          </div>
+        `;
+      }).join('');
+
+      document.getElementById('rosterDesktopBody').innerHTML = rows.map((a) => {
+        const emp = getEmployeeById(a.employeeId), site = getSiteById(a.siteId), sh = getShiftById(a.siteId, a.shiftId);
+        return `
+          <tr class="hover:bg-warmgray/70">
+            <td class="py-3 px-4"><div class="font-bold text-obsidian-900">${escapeHtml(emp.name)}</div><div class="text-xs font-mono text-stone-500">${escapeHtml(emp.id)}</div></td>
+            <td class="py-3 px-3">${getRoleBadgeHtml(emp.role)}</td>
+            <td class="py-3 px-3"><div class="font-semibold text-obsidian-900">${escapeHtml(site.name)}</div><div class="text-xs text-stone-500">${escapeHtml(sh.name)} (${sh.start}–${sh.end})</div></td>
+            <td class="py-3 px-3">${a.recurring ? '<span class="px-2 py-0.5 rounded-full text-xs font-bold bg-green-100 text-green-800">Recurring Daily</span>' : `<span class="px-2 py-0.5 rounded-full text-xs font-bold bg-gold-50 text-obsidian-900 border border-gold-300 font-mono">${escapeHtml(a.date)}</span>`}</td>
+            <td class="py-3 px-3 text-xs text-stone-700">${escapeHtml(a.dutyNotes || '—')}</td>
+            <td class="py-3 px-4 text-right"><button type="button" onclick="deleteAssignment('${a.id}')" class="min-h-[38px] px-3 rounded-lg bg-red-50 hover:bg-red-100 text-[#DC2626] text-xs font-bold">Delete</button></td>
+          </tr>
+        `;
+      }).join('');
+      refreshIcons();
+    }
+
+    function openAssignmentModal() {
+      const body = `
+        <div class="space-y-3.5">
+          <div>
+            <label class="block text-xs font-bold uppercase text-stone-500 mb-1">Employee</label>
+            <select id="asgEmp" class="w-full min-h-[48px] rounded-xl border border-stone-300 bg-white px-3">
+              ${state.employees.map((e) => `<option value="${e.id}">${escapeHtml(e.name)} (${escapeHtml(e.id)}) — ${escapeHtml(e.role)}</option>`).join('')}
+            </select>
+          </div>
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            <div>
+              <label class="block text-xs font-bold uppercase text-stone-500 mb-1">Client Site</label>
+              <select id="asgSite" onchange="updateAsgModalShifts()" class="w-full min-h-[48px] rounded-xl border border-stone-300 bg-white px-3">
+                ${state.sites.map((s) => `<option value="${s.id}">${escapeHtml(s.name)}</option>`).join('')}
+              </select>
+            </div>
+            <div>
+              <label class="block text-xs font-bold uppercase text-stone-500 mb-1">Shift</label>
+              <select id="asgShift" class="w-full min-h-[48px] rounded-xl border border-stone-300 bg-white px-3"></select>
+            </div>
+          </div>
+          <div class="p-3.5 rounded-xl bg-warmgray border border-stone-200 space-y-2.5">
+            <label class="flex items-center gap-2.5 text-sm font-bold text-obsidian-900 cursor-pointer">
+              <input id="asgRecurring" type="checkbox" checked onchange="document.getElementById('asgDateWrap').classList.toggle('hidden', this.checked)" class="w-5 h-5 rounded accent-obsidian-900" />
+              Recurring Daily Shift
+            </label>
+            <div id="asgDateWrap" class="hidden">
+              <label class="block text-xs font-bold uppercase text-stone-500 mb-1">Specific Date</label>
+              <input id="asgDate" type="date" value="${getTodayISO()}" class="w-full min-h-[48px] rounded-xl border border-stone-300 bg-white px-3 font-mono" />
+            </div>
+          </div>
+          <div>
+            <label class="block text-xs font-bold uppercase text-stone-500 mb-1">Duty / Zone Notes</label>
+            <input id="asgNotes" type="text" placeholder="e.g. Lobby &amp; Restrooms - Tower A, Main Gate..." class="w-full min-h-[48px] rounded-xl border border-stone-300 bg-white px-3" />
+          </div>
+        </div>
+      `;
+      openModal('Assign Shift to Employee', body, [
+        { label: 'Cancel', cls: 'min-h-[48px] px-4 rounded-xl bg-stone-200 text-stone-700 font-bold text-sm', onClick: closeModal },
+        {
+          label: 'Save Assignment',
+          cls: 'min-h-[48px] px-5 rounded-xl bg-gold-500 text-obsidian-950 font-black text-sm',
+          onClick: () => {
+            const employeeId = document.getElementById('asgEmp').value;
+            const siteId = document.getElementById('asgSite').value;
+            const shiftId = document.getElementById('asgShift').value;
+            const recurring = document.getElementById('asgRecurring').checked;
+            const date = document.getElementById('asgDate').value || getTodayISO();
+            const dutyNotes = document.getElementById('asgNotes').value.trim();
+            if (!employeeId || !siteId || !shiftId) { showToast('Select employee, site & shift.', 'error'); return; }
+            state.assignments.unshift({ id: 'ASG-' + Date.now().toString().slice(-5), employeeId, siteId, shiftId, recurring, date, dutyNotes });
+            saveData(); closeModal(); renderRosterView();
+            showToast('Shift assigned!', 'success');
+          }
+        }
+      ]);
+      updateAsgModalShifts();
+    }
+
+    function updateAsgModalShifts() {
+      const site = getSiteById(document.getElementById('asgSite')?.value);
+      const sel = document.getElementById('asgShift');
+      if (!site || !sel) return;
+      sel.innerHTML = site.shifts.map((sh) => `<option value="${sh.id}">${escapeHtml(sh.name)} (${sh.start}–${sh.end})</option>`).join('');
+    }
+
+    function deleteAssignment(id) {
+      state.assignments = state.assignments.filter((a) => a.id !== id);
+      saveData(); renderRosterView();
+      showToast('Assignment deleted.', 'info');
+    }
+
+    /* =========================================================================
+       ADMIN VIEW 3: SITES & SHIFT TIMINGS
+       ========================================================================= */
+    function renderSitesView() {
+      document.getElementById('sitesListContainer').innerHTML = state.sites.map((site) => {
+        const onDuty = state.logs.filter((l) => l.siteId === site.id && !l.checkOutTime).length;
+        const shiftsHtml = site.shifts.map((sh) => `
+          <div class="flex items-center justify-between gap-2 bg-warmgray rounded-xl px-3 py-2.5 border border-stone-200">
+            <div class="min-w-0">
+              <div class="text-xs font-extrabold text-obsidian-900">${escapeHtml(sh.name)}</div>
+              <div class="text-xs font-mono text-stone-600">${sh.start} – ${sh.end} <span class="font-sans text-stone-500">• ${sh.graceMins}m grace</span></div>
+            </div>
+            <button type="button" onclick="openEditShiftModal('${site.id}', '${sh.id}')"
+              class="min-h-[40px] px-3 rounded-lg bg-white border border-stone-300 text-xs font-bold text-obsidian-900 hover:bg-gold-50 shrink-0">Edit</button>
+          </div>
+        `).join('');
+
+        return `
+          <div class="bg-white rounded-2xl border border-stone-200 shadow-sm p-4 sm:p-5 space-y-4">
+            <div class="flex items-start justify-between gap-2">
+              <div class="min-w-0">
+                <div class="flex flex-wrap items-center gap-2">
+                  <h3 class="text-base font-extrabold text-obsidian-900">${escapeHtml(site.name)}</h3>
+                  <span class="px-2 py-0.5 rounded-full text-[11px] font-bold ${onDuty ? 'bg-green-100 text-green-800' : 'bg-stone-100 text-stone-500'}">${onDuty} On-Duty</span>
+                </div>
+                ${site.address ? `<div class="text-xs text-stone-500 mt-0.5">${escapeHtml(site.address)}</div>` : ''}
+                <div class="text-[11px] font-mono text-stone-400 mt-0.5">${site.lat.toFixed(4)}, ${site.lng.toFixed(4)}</div>
+              </div>
+              <button type="button" onclick="confirmDeleteSite('${site.id}')" class="w-10 h-10 rounded-xl bg-red-50 text-[#DC2626] flex items-center justify-center shrink-0"><i data-lucide="trash-2" class="w-4 h-4"></i></button>
+            </div>
+
+            <div class="flex items-center justify-between gap-3 bg-warmgray rounded-xl p-3 border border-stone-200">
+              <span class="text-xs font-bold text-stone-700">Geofence Radius (meters)</span>
+              <input type="number" min="20" max="2000" value="${site.radius}" onchange="updateSiteRadius('${site.id}', this.value)"
+                class="w-24 min-h-[44px] rounded-xl border border-stone-300 bg-white px-3 text-center font-mono font-bold text-obsidian-900" />
+            </div>
+
+            <div class="space-y-2">
+              <div class="flex items-center justify-between">
+                <span class="text-[11px] font-bold uppercase tracking-wider text-stone-500">Site Shift Timings</span>
+                <button type="button" onclick="openEditShiftModal('${site.id}')" class="text-xs font-extrabold text-gold-700 hover:text-obsidian-900">+ Add Shift</button>
+              </div>
+              <div class="space-y-2">${shiftsHtml}</div>
+            </div>
+          </div>
+        `;
+      }).join('');
+      refreshIcons();
+    }
+
+    function updateSiteRadius(siteId, val) {
+      const site = getSiteById(siteId);
+      if (!site) return;
+      site.radius = Math.max(20, Math.min(2000, parseInt(val, 10) || 150));
+      saveData();
+      showToast(`${site.name} radius updated to ${site.radius}m.`, 'success');
+    }
+
+    function openAddSiteModal() {
+      const body = `
+        <div class="space-y-3.5">
+          <div>
+            <label class="block text-xs font-bold uppercase text-stone-500 mb-1">Client Site Name</label>
+            <input id="mSiteName" type="text" placeholder="e.g. Manyata Tech Park" class="w-full min-h-[48px] rounded-xl border border-stone-300 px-3.5" />
+          </div>
+          <div>
+            <label class="block text-xs font-bold uppercase text-stone-500 mb-1">Address / Area</label>
+            <input id="mSiteAddr" type="text" placeholder="e.g. Nagawara, Outer Ring Rd, Bengaluru" class="w-full min-h-[48px] rounded-xl border border-stone-300 px-3.5" />
+          </div>
+          <div class="grid grid-cols-2 gap-3">
+            <div>
+              <label class="block text-xs font-bold uppercase text-stone-500 mb-1">Latitude</label>
+              <input id="mSiteLat" type="number" step="any" placeholder="12.9716" class="w-full min-h-[48px] rounded-xl border border-stone-300 px-3 font-mono" />
+            </div>
+            <div>
+              <label class="block text-xs font-bold uppercase text-stone-500 mb-1">Longitude</label>
+              <input id="mSiteLng" type="number" step="any" placeholder="77.5946" class="w-full min-h-[48px] rounded-xl border border-stone-300 px-3 font-mono" />
+            </div>
+          </div>
+          <button type="button" onclick="fillSiteModalGPS()" class="w-full min-h-[48px] rounded-xl bg-gold-50 hover:bg-gold-100 text-obsidian-900 border border-gold-300 text-xs font-extrabold flex items-center justify-center gap-2">
+            <i data-lucide="crosshair" class="w-4 h-4 text-gold-700"></i>
+            <span>Use My Current GPS</span>
+          </button>
+          <div>
+            <label class="block text-xs font-bold uppercase text-stone-500 mb-1">Geofence Radius (meters)</label>
+            <input id="mSiteRadius" type="number" min="20" max="2000" value="150" class="w-full min-h-[48px] rounded-xl border border-stone-300 px-3.5 font-mono" />
+          </div>
+        </div>
+      `;
+      openModal('Add New Client Site', body, [
+        { label: 'Cancel', cls: 'min-h-[48px] px-4 rounded-xl bg-stone-200 text-stone-700 font-bold text-sm', onClick: closeModal },
+        {
+          label: 'Save Site',
+          cls: 'min-h-[48px] px-5 rounded-xl bg-gold-500 text-obsidian-950 font-black text-sm',
+          onClick: () => {
+            const name = document.getElementById('mSiteName').value.trim();
+            const address = document.getElementById('mSiteAddr').value.trim();
+            const lat = parseFloat(document.getElementById('mSiteLat').value);
+            const lng = parseFloat(document.getElementById('mSiteLng').value);
+            const radius = Math.max(20, Math.min(2000, parseInt(document.getElementById('mSiteRadius').value, 10) || 150));
+            if (!name || Number.isNaN(lat) || Number.isNaN(lng)) { showToast('Enter valid site name and GPS coords.', 'error'); return; }
+            const uid = Date.now().toString().slice(-4);
+            state.sites.push({
+              id: 'SITE-' + uid, name, address, lat, lng, radius,
+              shifts: [
+                { id: 'SH-' + uid + 'M', name: 'Morning', start: '06:00', end: '14:00', graceMins: 15 },
+                { id: 'SH-' + uid + 'A', name: 'Afternoon', start: '14:00', end: '22:00', graceMins: 15 },
+                { id: 'SH-' + uid + 'N', name: 'Night', start: '22:00', end: '06:00', graceMins: 15 },
+              ]
+            });
+            saveData(); closeModal(); renderSitesView();
+            showToast(`Added "${name}" with Morning, Afternoon & Night shifts.`, 'success');
+          }
+        }
+      ]);
+    }
+
+    function fillSiteModalGPS() {
+      if (!navigator.geolocation) { showToast('Geolocation unavailable.', 'warning'); return; }
+      navigator.geolocation.getCurrentPosition(
+        (pos) => {
+          document.getElementById('mSiteLat').value = pos.coords.latitude.toFixed(6);
+          document.getElementById('mSiteLng').value = pos.coords.longitude.toFixed(6);
+          showToast('Current GPS coordinates filled!', 'success');
+        },
+        (err) => showToast(`GPS error: ${err.message}`, 'warning'),
+        { enableHighAccuracy: true, timeout: 8000 }
+      );
+    }
+
+    function openEditShiftModal(siteId, shiftId = null) {
+      const site = getSiteById(siteId);
+      if (!site) return;
+      const sh = shiftId ? site.shifts.find((s) => s.id === shiftId) : null;
+      const body = `
+        <div class="space-y-3.5">
+          <div>
+            <label class="block text-xs font-bold uppercase text-stone-500 mb-1">Shift Name</label>
+            <input id="eShName" type="text" value="${sh ? escapeAttr(sh.name) : ''}" placeholder="e.g. Morning / Afternoon / Night" class="w-full min-h-[48px] rounded-xl border border-stone-300 px-3.5" />
+          </div>
+          <div class="grid grid-cols-2 gap-3">
+            <div>
+              <label class="block text-xs font-bold uppercase text-stone-500 mb-1">Start Time</label>
+              <input id="eShStart" type="time" value="${sh ? sh.start : '07:00'}" class="w-full min-h-[48px] rounded-xl border border-stone-300 px-3 font-mono" />
+            </div>
+            <div>
+              <label class="block text-xs font-bold uppercase text-stone-500 mb-1">End Time</label>
+              <input id="eShEnd" type="time" value="${sh ? sh.end : '15:00'}" class="w-full min-h-[48px] rounded-xl border border-stone-300 px-3 font-mono" />
+            </div>
+          </div>
+          <div>
+            <label class="block text-xs font-bold uppercase text-stone-500 mb-1">Grace Period (minutes)</label>
+            <input id="eShGrace" type="number" min="0" max="120" value="${sh ? sh.graceMins : 15}" class="w-full min-h-[48px] rounded-xl border border-stone-300 px-3.5 font-mono" />
+          </div>
+        </div>
+      `;
+      openModal(sh ? `Edit ${sh.name} — ${site.name}` : `Add Shift — ${site.name}`, body, [
+        { label: 'Cancel', cls: 'min-h-[48px] px-4 rounded-xl bg-stone-200 text-stone-700 font-bold text-sm', onClick: closeModal },
+        {
+          label: 'Save Timing',
+          cls: 'min-h-[48px] px-5 rounded-xl bg-gold-500 text-obsidian-950 font-black text-sm',
+          onClick: () => {
+            const name = document.getElementById('eShName').value.trim();
+            const start = document.getElementById('eShStart').value;
+            const end = document.getElementById('eShEnd').value;
+            const graceMins = Math.max(0, parseInt(document.getElementById('eShGrace').value, 10) || 0);
+            if (!name || !start || !end) { showToast('Complete all shift fields.', 'error'); return; }
+            if (sh) { sh.name = name; sh.start = start; sh.end = end; sh.graceMins = graceMins; }
+            else { site.shifts.push({ id: 'SH-' + Date.now().toString().slice(-5), name, start, end, graceMins }); }
+            saveData(); closeModal(); renderSitesView();
+            showToast('Shift timing saved.', 'success');
+          }
+        }
+      ]);
+    }
+
+    function confirmDeleteSite(siteId) {
+      if (state.sites.length <= 1) { showToast('Keep at least one client site.', 'warning'); return; }
+      const site = getSiteById(siteId);
+      openModal('Delete Client Site?', `<p>Remove <strong>${escapeHtml(site.name)}</strong> and its roster assignments?</p>`, [
+        { label: 'Cancel', cls: 'min-h-[48px] px-4 rounded-xl bg-stone-200 text-stone-700 font-bold text-sm', onClick: closeModal },
+        {
+          label: 'Delete Site',
+          cls: 'min-h-[48px] px-5 rounded-xl bg-[#DC2626] text-white font-bold text-sm',
+          onClick: () => {
+            state.sites = state.sites.filter((s) => s.id !== siteId);
+            state.assignments = state.assignments.filter((a) => a.siteId !== siteId);
+            saveData(); closeModal(); renderSitesView();
+            showToast(`Removed "${site.name}".`, 'info');
+          }
+        }
+      ]);
+    }
+
+    /* =========================================================================
+       ADMIN VIEW 4: STAFF DIRECTORY & CREDENTIALS
+       ========================================================================= */
+    function setStaffRoleFilter(role) { state.staffRoleFilter = role; renderStaffDirectory(); }
+
+    function renderStaffDirectory() {
+      renderRolePillBar('staffRolePills', state.staffRoleFilter, 'setStaffRoleFilter');
+      const q = document.getElementById('staffSearch').value.trim().toLowerCase();
+      const filtered = state.employees.filter((e) => {
+        if (state.staffRoleFilter !== 'ALL' && e.role !== state.staffRoleFilter) return false;
+        if (q && !`${e.name} ${e.id} ${e.role} ${e.phone}`.toLowerCase().includes(q)) return false;
+        return true;
+      });
+
+      document.getElementById('emptyStaffState').classList.toggle('hidden', filtered.length > 0);
+
+      document.getElementById('staffMobileCards').innerHTML = filtered.map((e) => {
+        const onDuty = !!getActiveShiftForEmployee(e.id);
+        const asg = getActiveAssignmentsForEmployee(e.id)[0];
+        const post = asg ? `${getSiteById(asg.siteId)?.name || ''} (${getShiftById(asg.siteId, asg.shiftId)?.name || ''})` : 'Unassigned';
+        return `
+          <div class="rounded-2xl border border-stone-200 bg-warmgray p-4 space-y-3">
+            <div class="flex items-start justify-between gap-2">
+              <div class="min-w-0">
+                <div class="flex items-center gap-2">
+                  <span class="font-extrabold text-obsidian-900 text-sm truncate">${escapeHtml(e.name)}</span>
+                  ${onDuty ? '<span class="w-2.5 h-2.5 rounded-full bg-[#16A34A] shrink-0" title="On Duty"></span>' : ''}
+                </div>
+                <div class="mt-1 flex flex-wrap items-center gap-1.5">
+                  <span class="font-mono text-xs text-stone-600 font-bold">${escapeHtml(e.id)}</span>
+                  ${getRoleBadgeHtml(e.role)}
+                </div>
+              </div>
+              <div class="flex items-center gap-1 shrink-0">
+                <button type="button" onclick="openStaffModal('${e.id}')" class="w-10 h-10 rounded-xl bg-white border border-stone-200 text-obsidian-900 flex items-center justify-center"><i data-lucide="pencil" class="w-4 h-4"></i></button>
+                <button type="button" onclick="confirmRemoveStaff('${e.id}')" class="w-10 h-10 rounded-xl bg-red-50 text-[#DC2626] flex items-center justify-center"><i data-lucide="trash-2" class="w-4 h-4"></i></button>
+              </div>
+            </div>
+            <div class="bg-white rounded-xl p-3 border border-stone-200 text-xs flex items-center justify-between gap-2">
+              <div>
+                <div class="font-mono text-stone-700">+91 ${escapeHtml(e.phone)} • <strong class="text-obsidian-900">PIN: ${escapeHtml(e.pin)}</strong></div>
+                <div class="text-stone-500 mt-0.5">${escapeHtml(post)}</div>
+              </div>
+              <button type="button" onclick="copyStaffLogin('${e.id}')"
+                class="min-h-[40px] px-3 rounded-xl bg-gold-50 hover:bg-gold-100 text-obsidian-900 border border-gold-300 text-[11px] font-extrabold flex items-center gap-1 shrink-0">
+                <i data-lucide="copy" class="w-3.5 h-3.5 text-gold-700"></i>
+                <span>Copy Login</span>
+              </button>
+            </div>
+          </div>
+        `;
+      }).join('');
+
+      document.getElementById('staffDesktopBody').innerHTML = filtered.map((e) => {
+        const onDuty = !!getActiveShiftForEmployee(e.id);
+        const asg = getActiveAssignmentsForEmployee(e.id)[0];
+        const post = asg ? `${getSiteById(asg.siteId)?.name || ''} (${getShiftById(asg.siteId, asg.shiftId)?.name || ''})` : 'Unassigned';
+        return `
+          <tr class="hover:bg-warmgray/70">
+            <td class="py-3 px-4"><div class="flex items-center gap-2 font-bold text-obsidian-900">${escapeHtml(e.name)} ${onDuty ? '<span class="w-2 h-2 rounded-full bg-[#16A34A]"></span>' : ''}</div><div class="text-xs font-mono text-stone-500">${escapeHtml(e.id)}</div></td>
+            <td class="py-3 px-3">${getRoleBadgeHtml(e.role)}</td>
+            <td class="py-3 px-3 text-xs font-mono text-stone-700"><div>+91 ${escapeHtml(e.phone)}</div><div class="text-obsidian-900 font-bold">PIN: ${escapeHtml(e.pin)}</div></td>
+            <td class="py-3 px-3 text-xs text-stone-700">${escapeHtml(post)}</td>
+            <td class="py-3 px-4 text-right whitespace-nowrap space-x-1">
+              <button type="button" onclick="copyStaffLogin('${e.id}')" class="min-h-[38px] px-3 rounded-lg bg-gold-50 hover:bg-gold-100 text-obsidian-900 border border-gold-300 text-xs font-extrabold">Copy Login</button>
+              <button type="button" onclick="openStaffModal('${e.id}')" class="min-h-[38px] px-3 rounded-lg bg-warmgray hover:bg-stone-200 text-obsidian-900 text-xs font-bold">Edit</button>
+              <button type="button" onclick="confirmRemoveStaff('${e.id}')" class="min-h-[38px] px-3 rounded-lg bg-red-50 hover:bg-red-100 text-[#DC2626] text-xs font-bold">Remove</button>
+            </td>
+          </tr>
+        `;
+      }).join('');
+      refreshIcons();
+    }
+
+    function copyStaffLogin(empId) {
+      const emp = getEmployeeById(empId);
+      if (!emp) return;
+      const text = `Public Force Security Services — GeoAttend Login\nName: ${emp.name} (${emp.role})\nEmployee ID: ${emp.id}\nMobile: ${emp.phone}\n4-Digit PIN: ${emp.pin}`;
+      const ta = document.createElement('textarea');
+      ta.value = text;
+      ta.style.position = 'fixed';
+      ta.style.opacity = '0';
+      document.body.appendChild(ta);
+      ta.select();
+      try {
+        document.execCommand('copy');
+        showToast(`Copied login details for ${emp.name} (ready for WhatsApp/SMS)!`, 'success');
+      } catch (err) {
+        showToast('Could not copy automatically.', 'warning');
+      }
+      document.body.removeChild(ta);
+    }
+
+    function openStaffModal(editId = null) {
+      const existing = editId ? getEmployeeById(editId) : null;
+      const isCustom = existing && !STANDARD_ROLES.includes(existing.role);
+      const body = `
+        <div class="space-y-3.5">
+          <div>
+            <label class="block text-xs font-bold uppercase text-stone-500 mb-1">Full Name</label>
+            <input id="sName" type="text" value="${existing ? escapeAttr(existing.name) : ''}" placeholder="e.g. Meena Kumari" class="w-full min-h-[48px] rounded-xl border border-stone-300 px-3.5" />
+          </div>
+          <div class="grid grid-cols-2 gap-3">
+            <div>
+              <label class="block text-xs font-bold uppercase text-stone-500 mb-1">Employee ID</label>
+              <input id="sId" type="text" value="${existing ? escapeAttr(existing.id) : ''}" ${existing ? 'disabled' : ''} placeholder="PFSS-109"
+                class="w-full min-h-[48px] rounded-xl border border-stone-300 px-3 font-mono uppercase ${existing ? 'bg-stone-100 text-stone-500' : ''}" />
+            </div>
+            <div>
+              <label class="block text-xs font-bold uppercase text-stone-500 mb-1">4-Digit Login PIN</label>
+              <input id="sPin" type="text" inputmode="numeric" maxlength="4" value="${existing ? escapeAttr(existing.pin) : String(Math.floor(1000 + Math.random() * 9000))}"
+                class="w-full min-h-[48px] rounded-xl border border-stone-300 px-3 font-mono font-bold text-center tracking-widest" />
+            </div>
+          </div>
+          <div>
+            <label class="block text-xs font-bold uppercase text-stone-500 mb-1">Mobile Number</label>
+            <input id="sPhone" type="tel" value="${existing ? escapeAttr(existing.phone) : ''}" placeholder="9845022109" class="w-full min-h-[48px] rounded-xl border border-stone-300 px-3.5 font-mono" />
+          </div>
+          <div>
+            <label class="block text-xs font-bold uppercase text-stone-500 mb-1">Department / Role</label>
+            <select id="sRole" onchange="document.getElementById('sCustomWrap').classList.toggle('hidden', this.value !== '__CUSTOM__')"
+              class="w-full min-h-[48px] rounded-xl border border-stone-300 bg-white px-3">
+              ${STANDARD_ROLES.map((r) => `<option value="${r}" ${existing && existing.role === r ? 'selected' : ''}>${r}</option>`).join('')}
+              <option value="__CUSTOM__" ${isCustom ? 'selected' : ''}>+ Custom Role / Department...</option>
+            </select>
+          </div>
+          <div id="sCustomWrap" class="${isCustom ? '' : 'hidden'}">
+            <label class="block text-xs font-bold uppercase text-stone-500 mb-1">Custom Role Name</label>
+            <input id="sCustom" type="text" value="${isCustom ? escapeAttr(existing.role) : ''}" placeholder="e.g. Gardener, Driver, Valet..." class="w-full min-h-[48px] rounded-xl border border-stone-300 px-3.5" />
+          </div>
+        </div>
+      `;
+      openModal(existing ? `Edit ${existing.name}` : 'Add New Employee', body, [
+        { label: 'Cancel', cls: 'min-h-[48px] px-4 rounded-xl bg-stone-200 text-stone-700 font-bold text-sm', onClick: closeModal },
+        {
+          label: existing ? 'Save Changes' : 'Add Employee',
+          cls: 'min-h-[48px] px-5 rounded-xl bg-gold-500 text-obsidian-950 font-black text-sm',
+          onClick: () => {
+            const name = document.getElementById('sName').value.trim();
+            const id = document.getElementById('sId').value.trim().toUpperCase();
+            const pin = document.getElementById('sPin').value.trim();
+            const phone = document.getElementById('sPhone').value.trim();
+            let role = document.getElementById('sRole').value;
+            if (role === '__CUSTOM__') role = document.getElementById('sCustom').value.trim();
+
+            if (!name || !id || !role || !/^\d{4}$/.test(pin)) {
+              showToast('Provide Name, ID, Role, and a valid 4-digit PIN.', 'error');
+              return;
+            }
+            if (existing) {
+              existing.name = name; existing.pin = pin; existing.phone = phone || '—'; existing.role = role;
+            } else {
+              if (state.employees.some((e) => e.id === id)) { showToast(`ID ${id} already exists.`, 'error'); return; }
+              state.employees.push({ id, name, role, phone: phone || '—', pin });
+            }
+            saveData(); closeModal(); renderStaffDirectory();
+            showToast(existing ? `Updated ${name}.` : `Added ${name} (${id}).`, 'success');
+          }
+        }
+      ]);
+    }
+
+    function confirmRemoveStaff(empId) {
+      if (state.employees.length <= 1) { showToast('Keep at least one employee.', 'warning'); return; }
+      const emp = getEmployeeById(empId);
+      openModal('Remove Employee?', `<p>Remove <strong>${escapeHtml(emp.name)} (${escapeHtml(emp.id)})</strong> and their roster assignments?</p>`, [
+        { label: 'Cancel', cls: 'min-h-[48px] px-4 rounded-xl bg-stone-200 text-stone-700 font-bold text-sm', onClick: closeModal },
+        {
+          label: 'Remove',
+          cls: 'min-h-[48px] px-5 rounded-xl bg-[#DC2626] text-white font-bold text-sm',
+          onClick: () => {
+            state.employees = state.employees.filter((e) => e.id !== empId);
+            state.assignments = state.assignments.filter((a) => a.employeeId !== empId);
+            saveData(); closeModal(); renderStaffDirectory();
+            showToast(`Removed ${emp.name}.`, 'info');
+          }
+        }
+      ]);
+    }
+
+    /* =========================================================================
+       ADMIN VIEW 5: SETTINGS & PRODUCTION CONTROLS
+       ========================================================================= */
+    function renderSettingsView() {
+      renderBrandEmblems();
+      document.getElementById('settingHideSimulator').checked = !!state.settings.hideDemoSimulator;
+      document.getElementById('settingMandatorySelfie').checked = !!state.settings.mandatorySelfie;
+    }
+
+    function toggleSetting(key, val) {
+      state.settings[key] = !!val;
+      saveData();
+      showToast(
+        key === 'hideDemoSimulator'
+          ? `Demo GPS Simulator ${val ? 'HIDDEN (Production Mode)' : 'VISIBLE (Demo Mode)'}.`
+          : `Mandatory Live Selfie ${val ? 'ENABLED' : 'DISABLED'}.`,
+        'success'
+      );
+    }
+
+    function handleChangeAdminPin(e) {
+      e.preventDefault();
+      const cur = document.getElementById('pinCurrent').value.trim();
+      const nw = document.getElementById('pinNew').value.trim();
+      const conf = document.getElementById('pinConfirm').value.trim();
+      if (cur !== state.settings.adminPin) { showToast('Current Admin PIN is incorrect.', 'error'); return; }
+      if (!/^\d{4}$/.test(nw)) { showToast('New PIN must be exactly 4 digits.', 'error'); return; }
+      if (nw !== conf) { showToast('New PIN and Confirm PIN do not match.', 'error'); return; }
+      state.settings.adminPin = nw;
+      saveData();
+      document.getElementById('pinCurrent').value = '';
+      document.getElementById('pinNew').value = '';
+      document.getElementById('pinConfirm').value = '';
+      showToast('Admin PIN updated successfully!', 'success');
+    }
+
+    function confirmResetDemoData() {
+      openModal('Reset All Demo Data?', '<p>This restores default Bengaluru sites, staff credentials, roster, attendance logs, and resets the Admin PIN to <strong>1234</strong>.</p>', [
+        { label: 'Cancel', cls: 'min-h-[48px] px-4 rounded-xl bg-stone-200 text-stone-700 font-bold text-sm', onClick: closeModal },
+        {
+          label: 'Reset All Data',
+          cls: 'min-h-[48px] px-5 rounded-xl bg-[#DC2626] text-white font-bold text-sm',
+          onClick: () => {
+            state.sites = JSON.parse(JSON.stringify(DEFAULT_SITES));
+            state.employees = JSON.parse(JSON.stringify(DEFAULT_EMPLOYEES));
+            state.assignments = buildDefaultAssignments();
+            state.logs = buildDefaultLogs();
+            state.settings = { ...DEFAULT_SETTINGS };
+            saveData(); closeModal(); updateOnDutyBadges(); switchTab(state.activeTab);
+            showToast('Demo data restored.', 'info');
+          }
+        }
+      ]);
+    }
+
+    /* =========================================================================
+       INSTALL MODAL, GENERIC MODAL, TOAST & FORMATTING UTILS
+       ========================================================================= */
+    function openInstallModal() {
+      const body = `
+        <div class="space-y-4 text-sm">
+          <p class="text-stone-600">Deploy <strong>Public Force Security Services — GeoAttend</strong> to employees' phones with your official crest icon:</p>
+          <div class="rounded-2xl bg-obsidian-900 text-white border border-gold-500/30 p-3.5 text-xs space-y-1">
+            <div class="font-extrabold text-gold-400">Host Together over HTTPS</div>
+            <p class="text-stone-300">Place <code class="font-mono text-gold-400">geoattend.html</code> (as <code class="font-mono text-gold-400">index.html</code>), <code class="font-mono text-gold-400">icon-192.png</code>, and <code class="font-mono text-gold-400">icon-512.png</code> in one folder and drop onto <strong>Netlify Drop</strong> or <strong>GitHub Pages</strong>.</p>
+          </div>
+          <div class="rounded-2xl bg-green-50 border border-green-200 p-4 space-y-1.5">
+            <div class="font-extrabold text-green-950">Android (Google Chrome)</div>
+            <ol class="list-decimal list-inside text-xs text-green-900 space-y-1">
+              <li>Open the GeoAttend HTTPS link in <strong>Chrome</strong>.</li>
+              <li>Tap the <strong>three-dot menu (⋮)</strong> in the top-right.</li>
+              <li>Tap <strong>Add to Home screen</strong> → <strong>Install</strong>.</li>
+            </ol>
+          </div>
+          <div class="rounded-2xl bg-gold-50 border border-gold-200 p-4 space-y-1.5">
+            <div class="font-extrabold text-obsidian-900">iPhone / iPad (Safari)</div>
+            <ol class="list-decimal list-inside text-xs text-obsidian-900 space-y-1">
+              <li>Open the GeoAttend HTTPS link in <strong>Safari</strong>.</li>
+              <li>Tap the <strong>Share</strong> icon at the bottom of the screen.</li>
+              <li>Tap <strong>Add to Home Screen</strong> → <strong>Add</strong>.</li>
+            </ol>
+          </div>
+        </div>
+      `;
+      openModal('Install on Employees\' Phones', body, [
+        { label: 'Got It', cls: 'min-h-[48px] w-full sm:w-auto px-6 rounded-xl bg-obsidian-900 text-gold-400 font-extrabold text-sm', onClick: closeModal }
+      ]);
+    }
+
+    function openModal(title, bodyHtml, buttons = []) {
+      document.getElementById('modalTitle').textContent = title;
+      document.getElementById('modalBody').innerHTML = bodyHtml;
+      const footer = document.getElementById('modalFooter');
+      footer.innerHTML = '';
+      buttons.forEach((b) => {
+        const btn = document.createElement('button');
+        btn.type = 'button'; btn.textContent = b.label; btn.className = b.cls; btn.onclick = b.onClick;
+        footer.appendChild(btn);
+      });
+      document.getElementById('modalBackdrop').classList.remove('hidden');
+      refreshIcons();
+    }
+
+    function closeModal() { document.getElementById('modalBackdrop').classList.add('hidden'); }
+
+    function showToast(msg, type = 'info') {
+      const wrap = document.getElementById('toastContainer');
+      const el = document.createElement('div');
+      const map = {
+        success: 'bg-[#16A34A] text-white border-green-400',
+        error: 'bg-[#DC2626] text-white border-red-400',
+        warning: 'bg-gold-500 text-obsidian-950 border-gold-600',
+        info: 'bg-obsidian-900 text-gold-400 border-gold-500/40',
+      };
+      el.className = `pointer-events-auto px-4 py-3 rounded-2xl shadow-xl border text-xs sm:text-sm font-bold transition-all duration-300 ${map[type] || map.info}`;
+      el.textContent = msg;
+      wrap.appendChild(el);
+      setTimeout(() => { el.style.opacity = '0'; setTimeout(() => el.remove(), 300); }, 3000);
+    }
+
+    function formatTime(ts) { return new Date(ts).toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit', hour12: true }); }
+    function formatHMS(ms) {
+      const s = Math.max(0, Math.floor(ms / 1000));
+      return [Math.floor(s / 3600), Math.floor((s % 3600) / 60), s % 60].map((v) => String(v).padStart(2, '0')).join(':');
+    }
+    function formatShortDuration(ms) {
+      const m = Math.max(0, Math.floor(ms / 60000));
+      return m >= 60 ? `${Math.floor(m / 60)}h ${m % 60}m` : `${m}m`;
+    }
+    function escapeHtml(s) {
+      return String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+    }
+    function escapeAttr(s) { return escapeHtml(s).replace(/'/g, '&#39;'); }
+
+    /* =========================================================================
+       BOOTSTRAP APPLICATION
+       ========================================================================= */
+    window.addEventListener('DOMContentLoaded', () => {
+      initWebAppManifest();
+      loadPersistedData();
+      bindRadarEvents();
+      renderBrandEmblems();
+      updateClocksAndTimers();
+      setInterval(updateClocksAndTimers, 1000);
+
+      if (state.session) enterAuthenticatedApp();
+      else showLoginScreen();
+      refreshIcons();
+    });
+  </script>
+</body>
+</html>
